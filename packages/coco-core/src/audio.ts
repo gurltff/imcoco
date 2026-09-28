@@ -18,7 +18,6 @@ export const BREATH_SECONDS = 8; // 4s in, 4s out
 export class CocoAudio {
   private ctx?: AudioContext;
   private master?: GainNode;
-  private meows: AudioBuffer[] = [];
   private purrBuffer?: AudioBuffer;
   private purr?: { out: GainNode; stop: () => void; startedAt: number };
   private _volume = 0.8;
@@ -38,6 +37,7 @@ export class CocoAudio {
   async unlock() {
     if (!this.ctx) {
       const Ctx = window.AudioContext ?? (window as any).webkitAudioContext;
+      try { (navigator as any).audioSession && ((navigator as any).audioSession.type = "playback"); } catch { /* older Safari */ }
       this.ctx = new Ctx();
       this.master = this.ctx.createGain();
       this.master.connect(this.ctx.destination);
@@ -58,12 +58,8 @@ export class CocoAudio {
           return await ctx.decodeAudioData(await res.arrayBuffer());
         } catch { return undefined; }
       };
-      const [meows, purr] = await Promise.all([
-        Promise.all(this.opts.meowUrls.map(load)),
-        this.opts.purrUrl ? load(this.opts.purrUrl) : Promise.resolve(undefined),
-      ]);
-      this.meows = meows.filter((b): b is AudioBuffer => !!b);
-      this.purrBuffer = purr;
+      this.opts.meowUrls.forEach((u) => { const a = new Audio(); a.preload = "auto"; a.src = u; });
+      this.purrBuffer = this.opts.purrUrl ? await load(this.opts.purrUrl) : undefined;
     })();
     return this.loading;
   }
@@ -76,23 +72,27 @@ export class CocoAudio {
     this.master.gain.setTargetAtTime(this._muted ? 0 : this._volume, this.ctx.currentTime, 0.05);
   }
 
-  /** Random meow. `kind` only changes the caption + pitch a little. */
+  /**
+   * Random meow. Uses <audio> elements (not Web Audio) because they:
+   * - play data: URLs even where fetch() is blocked by a page's CSP,
+   * - still play on iPhones with the silent switch on.
+   */
   async meow(kind: "tap" | "attention" | "food" | "mrrp" = "tap") {
-    await this.unlock();
     const captions = { tap: "Coco: meow!", attention: "Coco: meow (look at me!)", food: "Coco: MEOW! (food?!)", mrrp: "Coco: mrrp…" };
     this.opts.onCaption?.(captions[kind]);
-    if (!this.ctx || !this.master || this.meows.length === 0) return;
-    let i = Math.floor(Math.random() * this.meows.length);
-    if (this.meows.length > 1 && i === this.lastMeowIndex) i = (i + 1) % this.meows.length;
+    this.unlock().catch(() => {});
+    const urls = this.opts.meowUrls;
+    if (urls.length === 0 || this._muted) return;
+    let i = Math.floor(Math.random() * urls.length);
+    if (urls.length > 1 && i === this.lastMeowIndex) i = (i + 1) % urls.length;
     this.lastMeowIndex = i;
-    const src = this.ctx.createBufferSource();
-    src.buffer = this.meows[i];
-    const rate = { tap: 1, attention: 1.05, food: 1.1, mrrp: 1.15 }[kind];
-    src.playbackRate.value = rate * (0.96 + Math.random() * 0.08);
-    const g = this.ctx.createGain();
-    g.gain.value = kind === "mrrp" ? 0.55 : 1;
-    src.connect(g).connect(this.master);
-    src.start();
+    const el = new Audio(urls[i]);
+    const rate = { tap: 1, attention: 1.05, food: 1.1, mrrp: 1.15 }[kind] * (0.96 + Math.random() * 0.08);
+    (el as any).preservesPitch = false;
+    (el as any).webkitPreservesPitch = false;
+    el.playbackRate = rate;
+    el.volume = Math.min(1, this._volume * (kind === "mrrp" ? 0.6 : 1));
+    try { await el.play(); } catch { /* blocked until the first tap */ }
   }
 
   /** Comically loud crunchy munch (synthesized). */
