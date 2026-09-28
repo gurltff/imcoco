@@ -246,7 +246,7 @@ function Birthday() {
     <div className="mt-4 text-center">
       <div className="rounded-[1.4rem] border-[2.5px] border-navy/80 bg-baby p-4 shadow-sticker">
         <p className="font-hand text-4xl leading-none text-white" style={{ WebkitTextStroke: "1px #2B3A55" }}>BIRTHDAY CAKE</p>
-        <p className="smallcaps !text-navy/80">15 November · Coco's day</p>
+        <p className="smallcaps !text-navy/80">16 November · Coco's day</p>
         <p className="mt-2 font-hand text-2xl">
           {b.isToday ? `Happy ${ordinal(b.turning)} birthday, Coco! 🎂` : `Coco turns ${b.turning} in ${b.daysLeft} day${b.daysLeft === 1 ? "" : "s"}`}
         </p>

@@ -237,7 +237,7 @@ function InfoModal({ open, onClose, g, onLearn }: { open: boolean; onClose: () =
       <div className="mt-2 grid grid-cols-2 gap-x-3 rounded border-2 border-black/20 bg-white/60 p-2 text-base">
         <span>Lives at: <b>Coco's Home</b></span><span>Age: <b>8 months</b></span>
         <span>Coat: <b>jet black</b></span><span>Eyes: <b>bright green</b></span>
-        <span className="col-span-2">Birthday: <b>15 Nov</b> {b.isToday ? "(today! 🎂)" : `(turning ${b.turning} in ${b.daysLeft} days)`}</span>
+        <span className="col-span-2">Birthday: <b>16 Nov</b> {b.isToday ? "(today! 🎂)" : `(turning ${b.turning} in ${b.daysLeft} days)`}</span>
       </div>
 
       <div className="mt-3 flex gap-1" role="tablist">

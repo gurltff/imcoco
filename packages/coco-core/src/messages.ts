@@ -32,8 +32,8 @@ export function dailyPick<T>(list: T[], date = new Date(), salt = 0): T {
   return list[Math.abs(Math.floor(day) + salt) % list.length];
 }
 
-/** Coco's birthday: 15 November. He turns 1 in 2026. */
-export const BIRTHDAY = { month: 10, day: 15, year: 2025 }; // month is 0-based
+/** Coco's birthday: 16 November. He turns 1 in 2026. */
+export const BIRTHDAY = { month: 10, day: 16, year: 2025 }; // month is 0-based
 
 export function birthdayInfo(now = new Date()) {
   const y = now.getFullYear();

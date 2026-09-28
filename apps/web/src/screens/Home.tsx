@@ -157,7 +157,7 @@ export function Home({ onNav }: { onNav: (s: Screen) => void }) {
         <Doodle name="cake" size={48} />
         <div className="flex-1">
           <p className="font-hand text-3xl leading-none text-white" style={{ WebkitTextStroke: "1px #2B3A55" }}>BIRTHDAY CAKE</p>
-          <p className="smallcaps !text-navy/80">{bday.isToday ? "Today! Light the candle" : `15 Nov · turning ${bday.turning} · ${bday.daysLeft} days`}</p>
+          <p className="smallcaps !text-navy/80">{bday.isToday ? "Today! Light the candle" : `16 Nov · turning ${bday.turning} · ${bday.daysLeft} days`}</p>
         </div>
         <Coco pose="play" size={64} bob={false} />
       </motion.button>

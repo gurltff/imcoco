@@ -43,7 +43,7 @@ A Chrome extension can only draw inside browser tabs. The desktop app is a trans
 - **Comfort**: opt-in, local sadness detection (English + Hinglish, emoji, typing rhythm), voice input, Coco walks over and purrs, hug mode, purr-synced breathing.
 - **World** (game style): isometric house and yard, Coco wanders, naps in the sunbeam, chases butterflies, sleeps at night (real clock), "..." attention bubble, stray-cat stare-offs, feeding with loud munching, chonk level, village shop with 12 items, info modal with behaviour stages.
 - **Play**: yarn, laser dot and box mini-games that earn fish and yarn.
-- **Memories**: photo/video wall (IndexedDB), letters sealed with a paw stamp in Coco's mailbox, birthday cake on 15 November.
+- **Memories**: photo/video wall (IndexedDB), letters sealed with a paw stamp in Coco's mailbox, birthday cake on 16 November.
 
 ## Audio
 
