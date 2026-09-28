@@ -1,0 +1,31 @@
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import { VitePWA } from "vite-plugin-pwa";
+import { fileURLToPath } from "node:url";
+
+const repoRoot = fileURLToPath(new URL("../..", import.meta.url));
+
+export default defineConfig({
+  server: { fs: { allow: [repoRoot] } },
+  plugins: [
+    react(),
+    VitePWA({
+      registerType: "autoUpdate",
+      includeAssets: ["icon.svg"],
+      workbox: { globPatterns: ["**/*.{js,css,html,svg,png,mp3,woff2}"] },
+      manifest: {
+        name: "Coco's Corner",
+        short_name: "Coco",
+        description: "A cosy little corner where Coco is always around.",
+        theme_color: "#A9C8E3",
+        background_color: "#FBF3DC",
+        display: "standalone",
+        orientation: "portrait",
+        icons: [
+          { src: "icon.svg", sizes: "any", type: "image/svg+xml", purpose: "any" },
+          { src: "icon.svg", sizes: "any", type: "image/svg+xml", purpose: "maskable" },
+        ],
+      },
+    }),
+  ],
+});

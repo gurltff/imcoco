@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { color-scheme: light; }
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  background: #efe3bf;
+  color: #2B3A55;
+  font-family: "Nunito", system-ui, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@layer components {
+  .gingham {
+    background-color: #dbe8f4;
+    background-image:
+      repeating-linear-gradient(0deg, rgba(169,200,227,.75) 0 8px, transparent 8px 16px),
+      repeating-linear-gradient(90deg, rgba(169,200,227,.75) 0 8px, transparent 8px 16px);
+  }
+  .gingham-red {
+    background-color: #f6dcd9;
+    background-image:
+      repeating-linear-gradient(0deg, rgba(200,50,58,.18) 0 7px, transparent 7px 14px),
+      repeating-linear-gradient(90deg, rgba(200,50,58,.18) 0 7px, transparent 7px 14px);
+  }
+  .paper {
+    background-color: #FBF3DC;
+    background-image: radial-gradient(rgba(43,58,85,.05) 1px, transparent 1px);
+    background-size: 14px 14px;
+  }
+  .sticker {
+    @apply rounded-[1.4rem] border-[2.5px] border-navy/80 bg-cream shadow-sticker;
+  }
+  .pill {
+    @apply inline-flex min-h-[44px] items-center justify-center gap-1 rounded-full border-2 border-navy/80 px-4 font-hand text-lg leading-none shadow-sticker transition active:translate-y-[1px];
+  }
+  .smallcaps { @apply text-[10px] font-extrabold uppercase tracking-[0.18em] text-navy/60; }
+  .game-btn {
+    @apply grid place-items-center rounded-full border-[2.5px] border-black bg-white;
+    box-shadow: 1px 2px 0 #000;
+  }
+}
+
+/* Coco's gentle breathing bob */
+@keyframes bob { 0%,100% { transform: translateY(0) scale(1,1); } 50% { transform: translateY(-2px) scale(1.015,.985); } }
+.coco-bob { animation: bob 3.2s ease-in-out infinite; transform-origin: 50% 100%; }
+@keyframes floaty { 0%,100% { transform: translateY(0) rotate(var(--r,0deg)); } 50% { transform: translateY(-5px) rotate(var(--r,0deg)); } }
+.floaty { animation: floaty 5s ease-in-out infinite; }
+
+.reduce-motion *, .reduce-motion *::before, .reduce-motion *::after {
+  animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .coco-bob, .floaty { animation: none; }
+}
+
+input[type=range] { accent-color: #C8323A; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; }
