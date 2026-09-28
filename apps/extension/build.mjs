@@ -2,7 +2,7 @@ import { build } from "esbuild";
 import { cpSync, mkdirSync, readdirSync, rmSync, readFileSync, writeFileSync, createWriteStream } from "node:fs";
 import { execSync } from "node:child_process";
 
-const APP_URL = process.env.COCO_APP_URL || "https://gurltff.github.io/imcoco/";
+const APP_URL = process.env.COCO_APP_URL || "https://cocos-corner.netlify.app/";
 rmSync("dist", { recursive: true, force: true });
 mkdirSync("dist/audio", { recursive: true });
 await build({
