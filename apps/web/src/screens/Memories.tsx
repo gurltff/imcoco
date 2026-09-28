@@ -9,6 +9,13 @@ import { useLocal } from "../lib/store";
 
 type Tab = "album" | "letters" | "birthday";
 
+/** Two-tap confirm (browser confirm dialogs aren't available everywhere). */
+function ConfirmBtn({ label, onConfirm }: { label: string; onConfirm: () => void }) {
+  const [armed, setArmed] = useState(false);
+  useEffect(() => { if (!armed) return; const t = setTimeout(() => setArmed(false), 3000); return () => clearTimeout(t); }, [armed]);
+  return <button className="min-h-[44px] text-sm text-cherry underline" onClick={() => (armed ? onConfirm() : setArmed(true))}>{armed ? "Tap again to remove" : label}</button>;
+}
+
 export function Memories() {
   const [tab, setTab] = useLocal<Tab>("memTab", "album");
   return (
@@ -90,7 +97,7 @@ function Album() {
                 onBlur={async (e) => { await putMemory({ ...open, caption: e.target.value }); refresh(); }}
                 className="mt-2 w-full border-b-2 border-dashed border-navy/30 bg-transparent font-hand text-2xl focus:outline-none" />
               <div className="mt-3 flex justify-between">
-                <button className="text-sm text-cherry underline" onClick={async () => { if (confirm("Remove this memory from the wall?")) { await deleteMemory(open.id); setOpen(null); refresh(); } }}>Remove</button>
+                <ConfirmBtn label="Remove" onConfirm={async () => { await deleteMemory(open.id); setOpen(null); refresh(); }} />
                 <button className="pill bg-baby" onClick={() => setOpen(null)}>Close</button>
               </div>
             </motion.div>
@@ -189,7 +196,7 @@ function Letters() {
               <p className="font-hand text-2xl text-cherry">Dear Coco,</p>
               <p className="mt-1 max-h-[50vh] overflow-y-auto whitespace-pre-wrap font-hand text-xl leading-snug">{reading.text}</p>
               <div className="mt-4 flex items-center justify-between">
-                <button className="text-sm text-cherry underline" onClick={() => { if (confirm("Throw away this letter?")) { setLetters(letters.filter((x) => x.id !== reading.id)); setReading(null); } }}>Remove</button>
+                <ConfirmBtn label="Remove" onConfirm={() => { setLetters(letters.filter((x) => x.id !== reading.id)); setReading(null); }} />
                 <button className="pill bg-baby" onClick={() => setReading(null)}>Fold it back</button>
               </div>
             </motion.div>

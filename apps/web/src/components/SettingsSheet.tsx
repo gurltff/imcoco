@@ -52,7 +52,9 @@ export function SettingsSheet({ open, onClose }: { open: boolean; onClose: () =>
             <div className="mt-4 rounded-2xl border-2 border-dashed border-navy/30 p-3">
               <p className="font-hand text-xl">Coco on your computer</p>
               <p className="text-xs text-navy/70">Chrome: download, unzip, open chrome://extensions, turn on Developer mode, then "Load unpacked" and pick the folder.</p>
-              <a className="pill mt-2 w-full bg-white" href="./coco-extension.zip" download>Download Coco for Chrome</a>
+              {import.meta.env.MODE === "artifact"
+                ? <p className="mt-2 rounded-xl bg-white/70 p-2 text-xs">Get the folder <b>apps/extension</b> from the imcoco GitHub repo (run <code>npm run build:extension</code>), or ask for the zip.</p>
+                : <a className="pill mt-2 w-full bg-white" href="./coco-extension.zip" download>Download Coco for Chrome</a>}
             </div>
             <button className="pill mt-4 w-full bg-baby" onClick={onClose}>Done</button>
           </motion.div>
