@@ -6,13 +6,14 @@ import { fileURLToPath } from "node:url";
 const repoRoot = fileURLToPath(new URL("../..", import.meta.url));
 
 export default defineConfig({
+  base: "./",
   server: { fs: { allow: [repoRoot] } },
   plugins: [
     react(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["icon.svg"],
-      workbox: { globPatterns: ["**/*.{js,css,html,svg,png,mp3,woff2}"] },
+      includeAssets: ["icon.svg", "icon-192.png"],
+      workbox: { globPatterns: ["**/*.{js,css,html,svg,png,mp3,woff2}"], globIgnores: ["coco-extension.zip"] },
       manifest: {
         name: "Coco's Corner",
         short_name: "Coco",
@@ -22,6 +23,8 @@ export default defineConfig({
         display: "standalone",
         orientation: "portrait",
         icons: [
+          { src: "icon-192.png", sizes: "192x192", type: "image/png" },
+          { src: "icon-512.png", sizes: "512x512", type: "image/png" },
           { src: "icon.svg", sizes: "any", type: "image/svg+xml", purpose: "any" },
           { src: "icon.svg", sizes: "any", type: "image/svg+xml", purpose: "maskable" },
         ],

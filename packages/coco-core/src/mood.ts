@@ -1,4 +1,4 @@
-export type CocoPose = "sit" | "sleep" | "eat" | "walk" | "puff" | "purr" | "play";
+export type CocoPose = "sit" | "sleep" | "eat" | "walk" | "puff" | "purr" | "play" | "stretch";
 
 export type CocoMood = "happy" | "sleepy" | "hungry" | "playful" | "cuddly" | "grumpy";
 

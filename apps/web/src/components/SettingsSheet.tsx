@@ -49,6 +49,11 @@ export function SettingsSheet({ open, onClose }: { open: boolean; onClose: () =>
               <Toggle label="Reduce motion" hint="Calmer, fewer animations" checked={s.reducedMotion} onChange={(v) => patch({ reducedMotion: v })} />
               <Toggle label="Coco notices when I'm sad" hint="Opt-in. Checked only on this device, never sent anywhere." checked={s.comfortDetection} onChange={(v) => patch({ comfortDetection: v })} />
             </div>
+            <div className="mt-4 rounded-2xl border-2 border-dashed border-navy/30 p-3">
+              <p className="font-hand text-xl">Coco on your computer</p>
+              <p className="text-xs text-navy/70">Chrome: download, unzip, open chrome://extensions, turn on Developer mode, then "Load unpacked" and pick the folder.</p>
+              <a className="pill mt-2 w-full bg-white" href="./coco-extension.zip" download>Download Coco for Chrome</a>
+            </div>
             <button className="pill mt-4 w-full bg-baby" onClick={onClose}>Done</button>
           </motion.div>
         </>

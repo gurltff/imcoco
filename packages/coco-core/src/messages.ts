@@ -31,3 +31,19 @@ export function dailyPick<T>(list: T[], date = new Date(), salt = 0): T {
   const day = Math.floor(date.getTime() / 86_400_000) - date.getTimezoneOffset() / 1440;
   return list[Math.abs(Math.floor(day) + salt) % list.length];
 }
+
+/** Coco's birthday: 15 November. He turns 1 in 2026. */
+export const BIRTHDAY = { month: 10, day: 15, year: 2025 }; // month is 0-based
+
+export function birthdayInfo(now = new Date()) {
+  const y = now.getFullYear();
+  const isToday = now.getMonth() === BIRTHDAY.month && now.getDate() === BIRTHDAY.day;
+  let next = new Date(y, BIRTHDAY.month, BIRTHDAY.day);
+  if (!isToday && next < now) next = new Date(y + 1, BIRTHDAY.month, BIRTHDAY.day);
+  const today0 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const daysLeft = Math.round((next.getTime() - today0.getTime()) / 86_400_000);
+  const turning = next.getFullYear() - BIRTHDAY.year;
+  return { isToday, next, daysLeft, turning };
+}
+
+export const ordinal = (n: number) => n + (["th", "st", "nd", "rd"][(n % 100 - 20) % 10] || ["th", "st", "nd", "rd"][n % 100] || "th");

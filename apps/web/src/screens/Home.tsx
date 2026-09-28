@@ -1,11 +1,11 @@
 import { motion } from "framer-motion";
 import { useRef, useState, type ReactNode } from "react";
-import { CHECKIN_QUESTIONS, DAILY_MESSAGES, MOOD_INFO, currentMood, dailyPick } from "@coco/core";
+import { CHECKIN_QUESTIONS, DAILY_MESSAGES, MOOD_INFO, birthdayInfo, currentMood, dailyPick, ordinal } from "@coco/core";
 import { Coco } from "../components/Coco";
 import { Doodle, DoodleScatter } from "../components/Doodles";
 import { Hearts, type Burst } from "../components/Hearts";
 import { coco } from "../lib/audio";
-import { useLocal } from "../lib/store";
+import { useLocal, writeLocal } from "../lib/store";
 import type { Screen } from "../lib/nav";
 
 const item = {
@@ -59,6 +59,8 @@ export function Home({ onNav }: { onNav: (s: Screen) => void }) {
   const [checkin, setCheckin] = useLocal<{ day: string; answer: "yes" | "no" } | null>("checkin", null);
   const question = dailyPick(CHECKIN_QUESTIONS, new Date(), 3);
   const mood = MOOD_INFO[currentMood(new Date(), lastFed)];
+  const bday = birthdayInfo();
+  const ribbon = bday.isToday ? `It's my ${ordinal(bday.turning)} birthday!! Cake please. 🎂` : dailyPick(DAILY_MESSAGES);
   const answered = checkin?.day === today ? checkin.answer : null;
 
   const pet = (x: number, y: number) => {
@@ -84,7 +86,7 @@ export function Home({ onNav }: { onNav: (s: Screen) => void }) {
       {/* Red ribbon: Coco's daily message */}
       <motion.div variants={item} className="relative -mx-4 mt-1 flex items-center gap-2 bg-cherry px-4 py-2 text-cream shadow-sticker">
         <Doodle name="paw" size={18} className="shrink-0 text-cream" />
-        <p className="flex-1 font-hand text-[17px] leading-tight">{dailyPick(DAILY_MESSAGES)}</p>
+        <p className="flex-1 font-hand text-[17px] leading-tight">{ribbon}</p>
         <span className="smallcaps !text-cream/80">Coco says</span>
       </motion.div>
 
@@ -121,7 +123,7 @@ export function Home({ onNav }: { onNav: (s: Screen) => void }) {
             <Coco pose="sleep" size={56} bob={false} className="-ml-4" />
           </div>
         </Card>
-        <Card title="Memories" sub="Photo wall" onClick={() => onNav("memories")} tilt={-1}>
+        <Card title="Memories" sub="Photo wall" onClick={() => { writeLocal("memTab", "album"); onNav("memories"); }} tilt={-1}>
           <div className="rotate-[-6deg] rounded-sm border-2 border-navy/70 bg-white p-1.5 pb-4 shadow-sticker">
             <div className="grid h-14 w-16 place-items-center bg-baby/50"><Coco pose="sit" size={50} bob={false} /></div>
           </div>
@@ -148,6 +150,27 @@ export function Home({ onNav }: { onNav: (s: Screen) => void }) {
           </div>
         </div>
       </motion.div>
+
+      {/* Birthday banner */}
+      <motion.button variants={item} whileTap={{ scale: 0.98 }} onClick={() => { writeLocal("memTab", "birthday"); onNav("memories"); }}
+        className="relative mt-4 flex w-full items-center gap-3 overflow-hidden rounded-[1.4rem] border-[2.5px] border-navy/80 bg-baby px-4 py-3 text-left shadow-sticker">
+        <Doodle name="cake" size={48} />
+        <div className="flex-1">
+          <p className="font-hand text-3xl leading-none text-white" style={{ WebkitTextStroke: "1px #2B3A55" }}>BIRTHDAY CAKE</p>
+          <p className="smallcaps !text-navy/80">{bday.isToday ? "Today! Light the candle" : `15 Nov · turning ${bday.turning} · ${bday.daysLeft} days`}</p>
+        </div>
+        <Coco pose="play" size={64} bob={false} />
+      </motion.button>
+
+      {/* Letters strip */}
+      <motion.button variants={item} whileTap={{ scale: 0.98 }} onClick={() => { writeLocal("memTab", "letters"); onNav("memories"); }}
+        className="gingham-red relative mt-4 flex w-full items-center gap-3 rounded-[1.4rem] border-[2.5px] border-navy/80 px-4 py-3 text-left shadow-sticker">
+        <span className="grid h-11 w-11 place-items-center rounded-full border-2 border-navy/80 bg-cherry text-cream"><Doodle name="paw" size={22} /></span>
+        <div className="flex-1 rounded-xl bg-cream/90 px-2 py-1">
+          <p className="font-hand text-2xl leading-none text-cherry">Letters to Coco</p>
+          <p className="smallcaps">Write · seal · mailbox</p>
+        </div>
+      </motion.button>
 
       {/* Blue banner, like the reference's bottom banner */}
       <motion.button variants={item} whileTap={{ scale: 0.98 }} onClick={() => onNav("comfort")}

@@ -37,6 +37,7 @@ export function Coco({ pose = "sit", size = 120, accessories = true, outline, bo
   const svg = useMemo(() => cocoSvg({ pose, blink, step, accessories, outline }), [pose, blink, step, accessories, outline]);
   return (
     <div
+      aria-hidden
       className={`${bob && pose !== "walk" ? "coco-bob" : ""} ${className}`}
       style={{ width: size, height: size * (210 / 220) }}
       dangerouslySetInnerHTML={{ __html: svg }}

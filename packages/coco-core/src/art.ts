@@ -27,9 +27,12 @@ export interface CocoArtOptions {
   /** Red scarf + chef hat (main app). Off for the game world. */
   accessories?: boolean;
   outline?: string;
+  /** Recolour for other cats (neighbourhood strays). */
+  fur?: string;
+  eye?: string;
 }
 
-const P = PALETTE;
+let P = { ...PALETTE };
 
 function eyes(x1: number, x2: number, y: number, mode: "open" | "closed" | "happy" | "narrow", o: string) {
   if (mode === "closed")
@@ -135,21 +138,23 @@ function sleeping(o: string, acc: boolean) {
   );
 }
 
-function walking(o: string, acc: boolean, step: number, blink: boolean) {
+function walking(o: string, acc: boolean, step: number, blink: boolean, stretch = false) {
   const a = step % 2 === 0 ? 6 : -6;
+  const lift = stretch ? 16 : 0;
   const leg = (x: number, d: number) => `<rect x="${x + d}" y="150" width="17" height="36" rx="8" fill="${P.fur}" stroke="${o}" stroke-width="3"/>`;
   return (
     `<path d="M44 128 Q14 110 26 74" stroke="${o}" stroke-width="18" fill="none" stroke-linecap="round"/><path d="M44 128 Q14 110 26 74" stroke="${P.fur}" stroke-width="11" fill="none" stroke-linecap="round"/>` +
     leg(46, -a) + leg(116, a) +
-    `<ellipse cx="96" cy="136" rx="62" ry="38" fill="${P.fur}" stroke="${o}" stroke-width="3.5"/>` +
+    `<ellipse cx="96" cy="${136 + lift / 2}" rx="62" ry="38" transform="rotate(${stretch ? 10 : 0} 96 136)" fill="${P.fur}" stroke="${o}" stroke-width="3.5"/>` +
     leg(62, a) + leg(132, -a) +
-    `<g transform="translate(46 8) scale(.78)">` + ears(100, 38, o) +
+    `<g transform="translate(${stretch ? "56 38" : "46 8"}) scale(.78)">` + ears(100, 38, o) +
     `<ellipse cx="100" cy="92" rx="56" ry="46" fill="${P.fur}" stroke="${o}" stroke-width="3.5"/>` +
-    face(100, 90, blink ? "closed" : "open", o) + (acc ? scarf(100, 126, o) : "") + `</g>`
+    face(100, 90, blink || stretch ? "closed" : "open", o) + (acc ? scarf(100, 126, o) : "") + `</g>`
   );
 }
 
 export function cocoSvg(opts: CocoArtOptions = {}): string {
+  P = { ...PALETTE, fur: opts.fur ?? PALETTE.fur, eye: opts.eye ?? PALETTE.eye, furShine: opts.fur ? "#ffffff" : PALETTE.furShine };
   const o = opts.outline ?? P.navy;
   const acc = opts.accessories ?? true;
   const pose = opts.pose ?? "sit";
@@ -157,6 +162,7 @@ export function cocoSvg(opts: CocoArtOptions = {}): string {
   switch (pose) {
     case "sleep": inner = sleeping(o, acc); break;
     case "walk": inner = walking(o, acc, opts.step ?? 0, !!opts.blink); break;
+    case "stretch": inner = walking(o, acc, 0, false, true); break;
     case "puff": inner = sitting(o, false, "narrow", { puff: true, mouth: true }); break;
     case "eat": inner = sitting(o, acc, "happy", { mouth: true }); break;
     case "purr": inner = sitting(o, acc, "closed", {}); break;

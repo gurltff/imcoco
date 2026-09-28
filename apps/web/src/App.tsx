@@ -10,7 +10,9 @@ import type { Screen } from "./lib/nav";
 import { useSettings } from "./lib/store";
 import { Comfort } from "./screens/Comfort";
 import { Home } from "./screens/Home";
-import { Soon } from "./screens/Soon";
+import { Memories } from "./screens/Memories";
+import { Play } from "./screens/Play";
+import { World } from "./screens/World";
 
 const ORDER: Screen[] = ["home", "comfort", "world", "play", "memories"];
 
@@ -40,6 +42,7 @@ export default function App() {
   const [awake, setAwake] = useState(() => sessionStorage.getItem("coco:awake") === "1");
   const [settings] = useSettings();
   const scroller = useRef<HTMLDivElement>(null);
+  const game = screen === "world" || screen === "play";
 
   const nav = (s: Screen) => {
     if (s === screen) return;
@@ -60,14 +63,14 @@ export default function App() {
       <div className={`flex min-h-full items-center justify-center sm:py-6 ${settings.reducedMotion ? "reduce-motion" : ""}`}>
         {/* Phone-shaped container (full screen on phones) */}
         <div className="paper relative flex h-[100dvh] w-full flex-col overflow-hidden sm:h-[844px] sm:max-h-[calc(100dvh-3rem)] sm:w-[400px] sm:rounded-phone sm:border-[3px] sm:border-navy/80 sm:shadow-2xl">
-          <header className="relative z-20 flex items-center justify-between px-5 pb-1 pt-[max(env(safe-area-inset-top),12px)]">
+          {!game && <header className="relative z-20 flex items-center justify-between px-5 pb-1 pt-[max(env(safe-area-inset-top),12px)]">
             <span className="font-hand text-lg text-navy/80">coco's corner</span>
             <span className="font-hand text-sm text-navy/50">est. with love</span>
-          </header>
+          </header>}
 
-          <div ref={scroller} className="no-scrollbar relative flex-1 overflow-y-auto overflow-x-hidden">
+          <div ref={scroller} className={`no-scrollbar relative flex-1 overflow-x-hidden ${game ? "overflow-hidden bg-white" : "overflow-y-auto"}`}>
             <AnimatePresence mode="popLayout" initial={false} custom={dir}>
-              <motion.div key={screen} custom={dir} className="min-h-full"
+              <motion.div key={screen} custom={dir} className={game ? "h-full" : "min-h-full"}
                 variants={{
                   enter: (d: number) => ({ x: d * 60, opacity: 0, filter: "blur(2px)" }),
                   center: { x: 0, opacity: 1, filter: "blur(0px)" },
@@ -76,16 +79,20 @@ export default function App() {
                 initial="enter" animate="center" exit="exit" transition={{ type: "spring", stiffness: 300, damping: 32 }}>
                 {screen === "home" && <Home onNav={nav} />}
                 {screen === "comfort" && <Comfort />}
-                {screen === "world" && <Soon which="world" />}
-                {screen === "play" && <Soon which="play" />}
-                {screen === "memories" && <Soon which="memories" />}
+                {screen === "world" && <World onNav={nav} />}
+                {screen === "play" && <Play onNav={nav} />}
+                {screen === "memories" && <Memories />}
               </motion.div>
             </AnimatePresence>
           </div>
 
-          <div className="pb-[env(safe-area-inset-bottom)]">
-            <TabBar current={screen} onNav={nav} onSettings={() => setSettingsOpen(true)} />
-          </div>
+          <AnimatePresence initial={false}>
+            {!game && (
+              <motion.div key="tabs" className="pb-[env(safe-area-inset-bottom)]" initial={{ y: 90 }} animate={{ y: 0 }} exit={{ y: 90, position: "absolute", bottom: 0, left: 0, right: 0 }} transition={{ type: "spring", stiffness: 380, damping: 34 }}>
+                <TabBar current={screen} onNav={nav} onSettings={() => setSettingsOpen(true)} />
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <Captions />
           <SettingsSheet open={settingsOpen} onClose={() => setSettingsOpen(false)} />

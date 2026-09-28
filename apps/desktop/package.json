@@ -1,0 +1,25 @@
+{
+  "name": "coco-desktop",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Coco floats above all your windows.",
+  "main": "main.cjs",
+  "scripts": {
+    "build": "node build.mjs",
+    "start": "node build.mjs && electron .",
+    "package": "node build.mjs && electron-builder --dir"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8",
+    "esbuild": "^0.24.0"
+  },
+  "build": {
+    "appId": "corner.coco.desktop",
+    "productName": "Coco",
+    "files": ["main.cjs", "preload.cjs", "index.html", "tray.png", "dist/**"],
+    "mac": { "target": "dmg", "category": "public.app-category.lifestyle" },
+    "win": { "target": "nsis" },
+    "linux": { "target": "AppImage" }
+  }
+}

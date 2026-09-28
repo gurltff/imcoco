@@ -7,10 +7,10 @@ Everything runs on the device. There is no login, no backend and no analytics.
 ## Layout
 
 ```
-packages/coco-core   shared character art (SVG poses), moods, messages, sentiment, audio engine
+packages/coco-core   shared: Coco SVG poses, moods, messages, birthday, sentiment, audio engine, desktop-pet engine
 apps/web             React + Vite + TS + Tailwind PWA (mobile-first, 390px)
-apps/extension       Phase 4: Chrome MV3 desktop pet (uses coco-core)
-apps/desktop         Phase 6: Electron always-on-top overlay (uses coco-core)
+apps/extension       Chrome MV3 extension: Coco walks on every page (Shadow DOM)
+apps/desktop         Electron overlay: Coco floats above all windows (tray: Mute / Sleep / Size / Start on login / Quit)
 assets/audio         Coco's real voice
 ```
 
@@ -18,9 +18,32 @@ assets/audio         Coco's real voice
 
 ```bash
 npm install
-npm run dev          # http://localhost:5173 (also on your LAN for phone testing)
-npm run build        # production build + service worker in apps/web/dist
+npm run dev              # web app on http://localhost:5173 (also on your LAN for phone testing)
+npm run build            # builds the extension (and its zip), then the web app into apps/web/dist
 ```
+
+### Chrome extension
+`npm run build:extension`, then open `chrome://extensions`, turn on Developer mode, click **Load unpacked** and choose `apps/extension/dist`.
+The same build is zipped to `apps/web/public/coco-extension.zip` so it can be downloaded from the app's Settings.
+Set `COCO_APP_URL=<your deployed link>` while building to make "Open Coco's Corner" go there.
+
+### Desktop overlay (Phase 6)
+The desktop app is kept out of the npm workspaces so a normal install never downloads Electron.
+```bash
+cd apps/desktop
+npm install
+npm start                # run it
+npm run package          # unpacked app via electron-builder
+```
+A Chrome extension can only draw inside browser tabs. The desktop app is a transparent, frameless, always-on-top window that is click-through everywhere except on Coco himself, so he sits above every other app.
+
+## What's inside the web app
+
+- **Home**: daily ribbon message, Coco at his table (tap to pet), mood widget, 4 cards, daily check-in, birthday + letters + hug banners.
+- **Comfort**: opt-in, local sadness detection (English + Hinglish, emoji, typing rhythm), voice input, Coco walks over and purrs, hug mode, purr-synced breathing.
+- **World** (game style): isometric house and yard, Coco wanders, naps in the sunbeam, chases butterflies, sleeps at night (real clock), "..." attention bubble, stray-cat stare-offs, feeding with loud munching, chonk level, village shop with 12 items, info modal with behaviour stages.
+- **Play**: yarn, laser dot and box mini-games that earn fish and yarn.
+- **Memories**: photo/video wall (IndexedDB), letters sealed with a paw stamp in Coco's mailbox, birthday cake on 15 November.
 
 ## Audio
 

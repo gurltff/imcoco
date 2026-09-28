@@ -25,6 +25,7 @@ export class CocoAudio {
   private _muted = false;
   private loading?: Promise<void>;
   private lastMeowIndex = -1;
+  private lastMunchCaption = -1e9;
 
   constructor(private opts: CocoAudioOptions) {}
 
@@ -92,6 +93,28 @@ export class CocoAudio {
     g.gain.value = kind === "mrrp" ? 0.55 : 1;
     src.connect(g).connect(this.master);
     src.start();
+  }
+
+  /** Comically loud crunchy munch (synthesized). */
+  async munch() {
+    await this.unlock();
+    if (performance.now() - this.lastMunchCaption > 4000) this.opts.onCaption?.("Coco: NOM NOM MUNCH (very loud)");
+    this.lastMunchCaption = performance.now();
+    const ctx = this.ctx!;
+    const t0 = ctx.currentTime;
+    for (let i = 0; i < 3; i++) {
+      const len = Math.floor(ctx.sampleRate * 0.09);
+      const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+      const d = buf.getChannelData(0);
+      for (let j = 0; j < len; j++) d[j] = (Math.random() * 2 - 1) * Math.pow(1 - j / len, 2);
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      const bp = ctx.createBiquadFilter();
+      bp.type = "bandpass"; bp.frequency.value = 1400 + Math.random() * 1200; bp.Q.value = 1.4;
+      const g = ctx.createGain(); g.gain.value = 1.4;
+      src.connect(bp).connect(g).connect(this.master!);
+      src.start(t0 + i * 0.16 + Math.random() * 0.03);
+    }
   }
 
   /** Start (or adjust) the purr. intensity 0..1 scales loudness. */

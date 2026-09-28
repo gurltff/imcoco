@@ -1,10 +1,16 @@
 {
   "name": "cocos-corner",
   "private": true,
-  "workspaces": ["packages/*", "apps/*"],
+  "workspaces": [
+    "packages/*",
+    "apps/web",
+    "apps/extension"
+  ],
   "scripts": {
     "dev": "npm run dev -w apps/web",
-    "build": "npm run build -w apps/web",
-    "typecheck": "npm run typecheck -w packages/coco-core && npm run typecheck -w apps/web"
+    "build": "npm run build -w apps/extension && npm run build -w apps/web",
+    "build:web": "npm run build -w apps/web",
+    "build:extension": "npm run build -w apps/extension",
+    "typecheck": "npm run typecheck -w packages/coco-core && npm run typecheck -w apps/web && npm run typecheck -w apps/extension"
   }
 }

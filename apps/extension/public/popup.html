@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<style>
+  body{margin:0;width:300px;font:14px/1.35 "Nunito",system-ui,sans-serif;color:#2B3A55;background:#FBF3DC;background-image:radial-gradient(rgba(43,58,85,.06) 1px,transparent 1px);background-size:14px 14px}
+  header{display:flex;align-items:center;gap:10px;padding:12px 14px 8px;background:#C8323A;color:#FBF3DC}
+  header h1{margin:0;font:700 22px "Patrick Hand","Comic Sans MS",cursive}
+  header svg{width:46px;height:44px}
+  main{padding:10px 14px 14px}
+  .row{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:40px;border-bottom:2px dashed rgba(43,58,85,.12)}
+  .row small{display:block;color:rgba(43,58,85,.6);font-size:11px}
+  .sw{appearance:none;width:44px;height:26px;border-radius:99px;border:2px solid #2B3A55;background:#fff;position:relative;cursor:pointer;flex:none}
+  .sw::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#FBF3DC;border:2px solid #2B3A55;box-sizing:border-box;transition:left .15s}
+  .sw:checked{background:#C8323A}.sw:checked::after{left:20px}
+  input[type=range]{width:120px;accent-color:#C8323A}
+  .sizes{display:flex;gap:4px}.sizes button{border:2px solid #2B3A55;background:#fff;border-radius:99px;padding:3px 10px;font:inherit;cursor:pointer}
+  .sizes button.on{background:#A9C8E3;font-weight:800}
+  .btn{display:block;width:100%;margin-top:10px;min-height:40px;border:2px solid #2B3A55;border-radius:99px;background:#A9C8E3;font:600 16px "Patrick Hand",cursive;color:#2B3A55;cursor:pointer;box-shadow:0 3px 0 rgba(43,58,85,.18)}
+  .btn.red{background:#C8323A;color:#FBF3DC}
+  details{margin-top:10px;font-size:12px}input[type=url]{width:100%;box-sizing:border-box;border:2px solid #2B3A55;border-radius:8px;padding:4px 6px;margin-top:4px}
+</style>
+</head>
+<body>
+<header>
+  <svg viewBox="0 0 220 210" id="face"></svg>
+  <div><h1>Coco's Corner</h1><div style="font-size:11px;letter-spacing:.15em;text-transform:uppercase;opacity:.85">always around you</div></div>
+</header>
+<main>
+  <label class="row"><span>Coco on web pages</span><input class="sw" type="checkbox" id="enabled" /></label>
+  <label class="row"><span>Coco on this site<small id="host"></small></span><input class="sw" type="checkbox" id="site" /></label>
+  <label class="row"><span>Mute</span><input class="sw" type="checkbox" id="muted" /></label>
+  <label class="row"><span>Volume</span><input type="range" min="0" max="1" step="0.05" id="volume" /></label>
+  <div class="row"><span>Size</span><div class="sizes" id="sizes"><button data-v="64">S</button><button data-v="90">M</button><button data-v="124">L</button></div></div>
+  <label class="row"><span>Follows my cursor</span><input class="sw" type="checkbox" id="follow" /></label>
+  <label class="row"><span>Comes over when I'm sad<small>Opt-in. Reads what you type in the focused box only on this device. Never saved or sent.</small></span><input class="sw" type="checkbox" id="comfort" /></label>
+  <button class="btn red" id="sleep">Sleep, Coco 💤</button>
+  <button class="btn" id="open">Open Coco's Corner</button>
+  <details><summary>App link</summary><input type="url" id="appUrl" /></details>
+</main>
+<script src="popup.js"></script>
+</body>
+</html>
