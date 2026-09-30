@@ -171,13 +171,13 @@ export function Play({ onNav }: { onNav: (s: Screen) => void }) {
   return (
     <div className="relative flex h-full flex-col bg-white font-game text-black">
       <div className="relative h-[60px] shrink-0"><Hud g={g} onBack={() => onNav("world")} /></div>
-      <div className="mx-3 mt-1 flex gap-1" role="tablist">
+      <div className="mx-3 mt-1 flex gap-1 lg:mx-auto lg:w-full lg:max-w-3xl" role="tablist">
         {([["yarn", "Yarn"], ["laser", "Laser dot"], ["box", "The box"]] as const).map(([id, l]) => (
           <button key={id} role="tab" aria-selected={tab === id} onClick={() => setTab(id)}
             className={`min-h-[44px] flex-1 rounded-md border-[2.5px] border-black text-xl ${tab === id ? "bg-sun font-bold" : "bg-white"}`} style={{ boxShadow: "1px 2px 0 #000" }}>{l}</button>
         ))}
       </div>
-      <div className="relative m-3 flex-1 overflow-hidden rounded-lg border-[2.5px] border-black">
+      <div className="relative m-3 flex-1 overflow-hidden rounded-lg border-[2.5px] border-black lg:mx-auto lg:mb-6 lg:w-full lg:max-w-3xl">
         {tab === "yarn" && <Yarn flash={flash} />}
         {tab === "laser" && <Laser flash={flash} />}
         {tab === "box" && <BoxGame flash={flash} />}

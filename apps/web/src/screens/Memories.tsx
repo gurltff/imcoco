@@ -19,7 +19,7 @@ function ConfirmBtn({ label, onConfirm }: { label: string; onConfirm: () => void
 export function Memories() {
   const [tab, setTab] = useLocal<Tab>("memTab", "album");
   return (
-    <div className="relative min-h-full px-4 pb-8 pt-1">
+    <div className="relative min-h-full px-4 pb-8 pt-1 lg:mx-auto lg:max-w-5xl lg:px-10 lg:pt-10">
       <DoodleScatter items={[{ name: "sparkle", x: "86%", y: "14px", size: 16 }, { name: "cherry", x: "4%", y: "20px", size: 22 }]} />
       <p className="smallcaps text-center">Coco's always around you</p>
       <h1 className="text-center font-hand text-[40px] leading-none text-cherry">Memories</h1>
@@ -65,7 +65,7 @@ function Album() {
   return (
     <div className="mt-4">
       <input ref={input} type="file" accept="image/*,video/*" multiple className="hidden" onChange={(e) => { add(e.target.files); e.target.value = ""; }} />
-      <button className="pill w-full bg-cherry text-cream" onClick={() => input.current?.click()}>+ Add photos & videos of Coco</button>
+      <button className="pill w-full bg-cherry text-cream lg:mx-auto lg:flex lg:w-auto lg:px-8" onClick={() => input.current?.click()}>+ Add photos & videos of Coco</button>
       <p className="mt-1 text-center text-xs text-navy/60">Saved only on this device.</p>
       <div className="gingham mt-4 min-h-[300px] rounded-[1.4rem] border-[2.5px] border-navy/80 p-3 shadow-sticker">
         {items.length === 0 ? (
@@ -73,7 +73,7 @@ function Album() {
             <div><Coco pose="sit" size={110} /><p className="font-hand text-xl">The wall is waiting for Coco's best angles.</p></div>
           </div>
         ) : (
-          <div className="columns-2 gap-3">
+          <div className="columns-2 gap-3 md:columns-3 lg:columns-4 lg:gap-5">
             {items.map((m, i) => (
               <motion.button key={m.id} layoutId={`mem-${m.id}`} onClick={() => setOpen(m)}
                 initial={{ opacity: 0, y: 20, rotate: 0 }} animate={{ opacity: 1, y: 0, rotate: m.tilt }} transition={{ delay: i * 0.04 }}
@@ -141,7 +141,7 @@ function Letters() {
   };
 
   return (
-    <div className="mt-4">
+    <div className="mt-4 lg:mx-auto lg:max-w-2xl">
       <div className="relative min-h-[300px]">
         <AnimatePresence mode="wait">
           {stage === "write" ? (
@@ -178,7 +178,7 @@ function Letters() {
           <p className="text-sm text-navy/60">{letters.length ? `${letters.length} sealed letter${letters.length > 1 ? "s" : ""}. Tap one to read.` : "Empty for now. He's waiting by it."}</p>
         </div>
       </div>
-      <div className="mt-3 grid grid-cols-2 gap-3">
+      <div className="mt-3 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
         {letters.map((l) => (
           <motion.button key={l.id} layout onClick={() => setReading(l)} whileTap={{ scale: 0.95 }} className="sticker relative flex h-24 flex-col items-center justify-center bg-cream">
             <svg viewBox="0 0 200 120" className="absolute inset-2 h-[calc(100%-1rem)] w-[calc(100%-1rem)] opacity-40"><path d="M6 8 L100 70 L194 8" fill="none" stroke="#2B3A55" strokeWidth="4" /></svg>
@@ -243,7 +243,7 @@ function Birthday() {
   };
 
   return (
-    <div className="mt-4 text-center">
+    <div className="mt-4 text-center lg:mx-auto lg:max-w-2xl">
       <div className="rounded-[1.4rem] border-[2.5px] border-navy/80 bg-baby p-4 shadow-sticker">
         <p className="font-hand text-4xl leading-none text-white" style={{ WebkitTextStroke: "1px #2B3A55" }}>BIRTHDAY CAKE</p>
         <p className="smallcaps !text-navy/80">16 November · Coco's day</p>

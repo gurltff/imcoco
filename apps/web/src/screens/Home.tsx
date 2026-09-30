@@ -27,7 +27,7 @@ function Card({ title, sub, onClick, children, tilt = 0 }: { title: string; sub:
 function TableScene({ onPet }: { onPet: (x: number, y: number) => void }) {
   const ref = useRef<HTMLButtonElement>(null);
   return (
-    <div className="relative mx-auto h-[210px] w-[280px]">
+    <div className="relative mx-auto h-[210px] w-[280px] lg:origin-top lg:scale-125 lg:mb-14">
       <button ref={ref} aria-label="Pet Coco" className="absolute left-1/2 top-0 -translate-x-1/2"
         onClick={(e) => { const r = ref.current!.parentElement!.getBoundingClientRect(); onPet(e.clientX - r.left, e.clientY - r.top); }}>
         <Coco pose="sit" size={150} />
@@ -72,7 +72,7 @@ export function Home({ onNav }: { onNav: (s: Screen) => void }) {
 
   return (
     <motion.div initial="hidden" animate="show" variants={{ show: { transition: { staggerChildren: 0.06 } } }}
-      className="relative px-4 pb-6">
+      className="relative px-4 pb-6 lg:mx-auto lg:max-w-6xl lg:px-10 lg:pb-10">
       <DoodleScatter items={[
         { name: "croissant", x: "6%", y: "140px", size: 30, r: -12 },
         { name: "sparkle", x: "84%", y: "150px", size: 18 },
@@ -84,12 +84,14 @@ export function Home({ onNav }: { onNav: (s: Screen) => void }) {
       ]} />
 
       {/* Red ribbon: Coco's daily message */}
-      <motion.div variants={item} className="relative -mx-4 mt-1 flex items-center gap-2 bg-cherry px-4 py-2 text-cream shadow-sticker">
+      <motion.div variants={item} className="relative -mx-4 mt-1 flex items-center gap-2 bg-cherry px-4 py-2 text-cream shadow-sticker lg:mx-0 lg:mt-6 lg:rounded-2xl lg:py-3">
         <Doodle name="paw" size={18} className="shrink-0 text-cream" />
         <p className="flex-1 font-hand text-[17px] leading-tight">{ribbon}</p>
         <span className="smallcaps !text-cream/80">Coco says</span>
       </motion.div>
 
+      <div className="lg:mt-6 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:items-start lg:gap-10">
+      <div className="lg:sticky lg:top-6">
       <motion.div variants={item} className="relative mt-3 text-center">
         <p className="font-hand text-sm tracking-wide text-navy/70">Fresh · Fluffy · Chubby</p>
         <Hearts bursts={bursts} />
@@ -110,7 +112,9 @@ export function Home({ onNav }: { onNav: (s: Screen) => void }) {
         </div>
       </motion.div>
 
-      <div className="relative mt-4 grid grid-cols-2 gap-3">
+      </div>
+      <div>
+      <div className="relative mt-4 grid grid-cols-2 gap-3 lg:mt-3 lg:gap-4">
         <Card title="Play with Coco" sub="Play time" onClick={() => onNav("play")} tilt={-1}>
           <div className="relative"><Coco pose="play" size={84} /><Doodle name="yarn" size={30} className="absolute -right-4 bottom-0" /></div>
         </Card>
@@ -182,6 +186,8 @@ export function Home({ onNav }: { onNav: (s: Screen) => void }) {
         <Coco pose="purr" size={70} bob={false} />
         <Doodle name="sparkle" size={16} className="absolute right-24 top-2" />
       </motion.button>
+      </div>
+      </div>
     </motion.div>
   );
 }

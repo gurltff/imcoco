@@ -27,7 +27,7 @@ export function SettingsSheet({ open, onClose }: { open: boolean; onClose: () =>
         <>
           <motion.div key="bg" className="absolute inset-0 z-40 bg-navy/30" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} />
           <motion.div key="sheet" role="dialog" aria-label="Settings"
-            className="paper absolute inset-x-0 bottom-0 z-50 max-h-[85%] overflow-y-auto rounded-t-[2rem] border-t-[2.5px] border-navy/80 px-5 pb-8 pt-3"
+            className="paper absolute inset-x-0 bottom-0 z-50 max-h-[85%] overflow-y-auto rounded-t-[2rem] border-t-[2.5px] border-navy/80 px-5 pb-8 pt-3 lg:inset-x-auto lg:right-6 lg:w-[440px] lg:rounded-[2rem] lg:border-[2.5px] lg:bottom-6"
             initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", stiffness: 320, damping: 34 }}>
             <div className="mx-auto mb-2 h-1.5 w-12 rounded-full bg-navy/30" />
             <div className="flex items-center gap-3">

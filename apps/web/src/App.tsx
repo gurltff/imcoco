@@ -60,10 +60,11 @@ export default function App() {
 
   return (
     <MotionConfig reducedMotion={settings.reducedMotion ? "always" : "user"}>
-      <div className={`flex min-h-full items-center justify-center sm:py-6 ${settings.reducedMotion ? "reduce-motion" : ""}`}>
+      <div className={`flex min-h-full items-center justify-center sm:py-6 lg:py-0 ${settings.reducedMotion ? "reduce-motion" : ""}`}>
         {/* Phone-shaped container (full screen on phones) */}
-        <div className="paper relative flex h-[100dvh] w-full flex-col overflow-hidden sm:h-[844px] sm:max-h-[calc(100dvh-3rem)] sm:w-[400px] sm:rounded-phone sm:border-[3px] sm:border-navy/80 sm:shadow-2xl">
-          {!game && <header className="relative z-20 flex items-center justify-between px-5 pb-1 pt-[max(env(safe-area-inset-top),12px)]">
+        {/* Phone: full screen. Tablet: phone-shaped frame. Laptop (lg+): full window with a sidebar. */}
+        <div className="paper relative flex h-[100dvh] w-full flex-col overflow-hidden sm:h-[844px] sm:max-h-[calc(100dvh-3rem)] sm:w-[400px] sm:rounded-phone sm:border-[3px] sm:border-navy/80 sm:shadow-2xl lg:h-[100dvh] lg:max-h-none lg:w-full lg:flex-row lg:rounded-none lg:border-0 lg:shadow-none">
+          {!game && <header className="relative z-20 flex items-center lg:hidden justify-between px-5 pb-1 pt-[max(env(safe-area-inset-top),12px)]">
             <span className="font-hand text-lg text-navy/80">coco's corner</span>
             <span className="font-hand text-sm text-navy/50">est. with love</span>
           </header>}
@@ -88,7 +89,7 @@ export default function App() {
 
           <AnimatePresence initial={false}>
             {!game && (
-              <motion.div key="tabs" className="pb-[env(safe-area-inset-bottom)]" initial={{ y: 90 }} animate={{ y: 0 }} exit={{ y: 90, position: "absolute", bottom: 0, left: 0, right: 0 }} transition={{ type: "spring", stiffness: 380, damping: 34 }}>
+              <motion.div key="tabs" className="pb-[env(safe-area-inset-bottom)] lg:order-first lg:pb-0" initial={{ y: 90 }} animate={{ y: 0 }} exit={{ y: 90, opacity: 0, position: "absolute", bottom: 0, left: 0, right: 0, transition: { duration: 0.2 } }} transition={{ type: "spring", stiffness: 380, damping: 34 }}>
                 <TabBar current={screen} onNav={nav} onSettings={() => setSettingsOpen(true)} />
               </motion.div>
             )}

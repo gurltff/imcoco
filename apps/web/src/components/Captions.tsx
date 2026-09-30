@@ -14,7 +14,7 @@ export function Captions() {
   }), []);
   if (!settings.captions) return null;
   return (
-    <div aria-live="polite" className="pointer-events-none absolute inset-x-0 bottom-28 z-50 flex flex-col items-center gap-1">
+    <div aria-live="polite" className="pointer-events-none absolute inset-x-0 bottom-28 z-50 lg:bottom-8 flex flex-col items-center gap-1">
       <AnimatePresence>
         {items.map((c) => (
           <motion.div key={c.id} initial={{ opacity: 0, y: -8, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -6 }}

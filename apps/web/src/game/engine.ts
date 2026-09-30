@@ -99,7 +99,7 @@ export class WorldEngine {
     this.W = r.width; this.H = r.height;
     this.canvas.width = Math.round(r.width * this.dpr);
     this.canvas.height = Math.round(r.height * this.dpr);
-    this.TW = Math.min(this.W / 7.4, (this.H - 200) / 4.4, 72);
+    this.TW = Math.min(this.W / 7.4, (this.H - 200) / 4.4, 120);
     this.TH = this.TW / 2;
     this.ox = this.W / 2;
     this.oy = Math.max(110, (this.H - 8 * this.TH) / 2 + 10);

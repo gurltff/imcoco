@@ -101,7 +101,7 @@ export function Comfort() {
   const letGo = () => { setText(""); rhythm.current.reset(); flash("Let go. Coco batted it away. 🐾"); };
 
   return (
-    <div className="relative min-h-full px-4 pb-6 pt-2">
+    <div className="relative min-h-full px-4 pb-6 pt-2 lg:mx-auto lg:max-w-3xl lg:px-10 lg:pt-10">
       <DoodleScatter items={[{ name: "sparkle", x: "86%", y: "18px", size: 16 }, { name: "cup", x: "4%", y: "70px", size: 24, r: -8 }, { name: "heart", x: "90%", y: "300px", size: 16 }]} />
 
       <div className="relative flex items-end justify-between">
@@ -139,7 +139,7 @@ export function Comfort() {
             onKeyDown={(e) => rhythm.current.record(e.key === "Backspace" || e.key === "Delete")}
             placeholder="It's okay. Type, or tap the mic and just talk…"
             aria-label="Tell Coco anything"
-            className="h-40 w-full resize-none bg-transparent font-hand text-[21px] leading-snug text-navy placeholder:text-navy/40 focus:outline-none" />
+            className="h-40 w-full resize-none lg:h-56 bg-transparent font-hand text-[21px] leading-snug text-navy placeholder:text-navy/40 focus:outline-none" />
           <div className="flex items-center gap-2 border-t-2 border-dashed border-navy/15 pt-2">
             {speechSupported() && (
               <button onClick={toggleMic} aria-pressed={listening} aria-label={listening ? "Stop voice" : "Speak to Coco"}
@@ -226,7 +226,7 @@ export function Comfort() {
       <AnimatePresence>
         {toast && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-            className="fixed inset-x-0 bottom-28 z-40 mx-auto w-fit rounded-full border-2 border-navy/70 bg-cream px-4 py-2 font-hand text-lg shadow-sticker">{toast}</motion.div>
+            className="fixed inset-x-0 bottom-28 z-40 lg:bottom-10 mx-auto w-fit rounded-full border-2 border-navy/70 bg-cream px-4 py-2 font-hand text-lg shadow-sticker">{toast}</motion.div>
         )}
       </AnimatePresence>
     </div>

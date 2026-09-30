@@ -23,14 +23,14 @@ export function Hud({ g, onBack, children }: { g: GameState; onBack: () => void;
     <div className="pointer-events-none absolute inset-x-0 top-0 z-10 px-3 pt-[max(env(safe-area-inset-top),10px)] font-game">
       <div className="pointer-events-auto flex items-center gap-2">
         <button aria-label="Back to Coco's Corner" onClick={onBack} className="game-btn h-10 w-10 text-xl leading-none">‹</button>
-        <div className="flex flex-1 items-center">
+        <div className="flex flex-1 items-center lg:max-w-md">
           <span className="z-10 grid h-9 w-9 place-items-center rounded-full border-[2.5px] border-black bg-white text-xl font-bold" style={{ boxShadow: "1px 2px 0 #000" }}>{g.level}</span>
           <div className="relative -ml-2 h-6 flex-1 overflow-hidden rounded-r-md border-[2.5px] border-black bg-white" aria-label={`XP ${g.xp} of ${need}`}>
             <motion.div className="h-full bg-sun" animate={{ width: `${(g.xp / need) * 100}%` }} />
             <span className="absolute inset-0 grid place-items-center text-sm font-bold">{g.xp}/{need}</span>
           </div>
         </div>
-        <span className="flex h-8 items-center gap-1 rounded-full border-[2.5px] border-black bg-white px-2 text-lg font-bold"><FishIcon />{g.fish}</span>
+        <span className="flex h-8 items-center gap-1 rounded-full border-[2.5px] border-black bg-white px-2 text-lg font-bold lg:ml-auto"><FishIcon />{g.fish}</span>
         <span className="flex h-8 items-center gap-1 rounded-full border-[2.5px] border-black bg-white px-2 text-lg font-bold"><YarnIcon />{g.yarn}</span>
       </div>
       {children}

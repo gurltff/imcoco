@@ -20,19 +20,24 @@ const TABS: { id: Screen | "settings"; label: string }[] = [
 
 export function TabBar({ current, onNav, onSettings }: { current: Screen; onNav: (s: Screen) => void; onSettings: () => void }) {
   return (
-    <nav className="relative z-30 mx-3 mb-3 flex items-stretch justify-around rounded-[1.6rem] border-[2.5px] border-navy/80 bg-baby px-1 py-1 shadow-sticker">
+    <nav className="relative z-30 mx-3 mb-3 flex items-stretch justify-around rounded-[1.6rem] border-[2.5px] border-navy/80 bg-baby px-1 py-1 shadow-sticker lg:m-4 lg:h-[calc(100dvh-2rem)] lg:w-60 lg:flex-col lg:justify-start lg:gap-1 lg:px-3 lg:py-5">
+      <div className="hidden px-2 pb-4 lg:block">
+        <p className="font-hand text-3xl leading-none text-cherry">coco's corner</p>
+        <p className="smallcaps mt-1">always around you</p>
+      </div>
       {TABS.map((t) => {
         const active = t.id === current || (t.id === "world" && current === "play");
         return (
           <button key={t.id} onClick={() => (t.id === "settings" ? onSettings() : onNav(t.id))}
             aria-current={active ? "page" : undefined}
-            className="relative flex min-h-[52px] flex-1 flex-col items-center justify-center gap-0.5 rounded-2xl text-navy">
+            className="relative flex min-h-[52px] flex-1 flex-col items-center justify-center gap-0.5 rounded-2xl text-navy lg:flex-none lg:flex-row lg:justify-start lg:gap-3 lg:px-4 lg:hover:bg-cream/50">
             {active && <motion.span layoutId="tab-pill" className="absolute inset-0.5 rounded-2xl bg-cream" transition={{ type: "spring", stiffness: 500, damping: 36 }} />}
             <span className={`relative h-6 w-6 ${active ? "text-cherry" : ""}`}>{icons[t.id]}</span>
-            <span className="relative text-[10px] font-extrabold uppercase tracking-wider">{t.label}</span>
+            <span className="relative text-[10px] font-extrabold uppercase tracking-wider lg:text-sm lg:normal-case lg:tracking-normal">{t.label}</span>
           </button>
         );
       })}
+      <div className="mt-auto hidden rounded-2xl bg-cream/70 p-3 text-center font-hand text-lg leading-tight lg:block">Coco is sitting right next to you. 💚</div>
     </nav>
   );
 }
