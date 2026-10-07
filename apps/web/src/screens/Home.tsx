@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { useRef, useState, type ReactNode } from "react";
 import { CHECKIN_QUESTIONS, DAILY_MESSAGES, MOOD_INFO, birthdayInfo, currentMood, dailyPick, ordinal } from "@coco/core";
 import { Coco } from "../components/Coco";
+import { PixelCoco } from "../game/ui";
 import { Doodle, DoodleScatter } from "../components/Doodles";
 import { Hearts, type Burst } from "../components/Hearts";
 import { coco } from "../lib/audio";
@@ -124,7 +125,7 @@ export function Home({ onNav }: { onNav: (s: Screen) => void }) {
         <Card title="Coco's Home" sub="Little world" onClick={() => onNav("world")} tilt={1}>
           <div className="relative flex items-end">
             <svg viewBox="0 0 60 56" className="h-16 w-16"><path d="M6 26 L30 6 L54 26 V52 H6Z" fill="#FBF3DC" stroke="#2B3A55" strokeWidth="2.5" strokeLinejoin="round" /><path d="M2 28 L30 3 L58 28" fill="none" stroke="#C8323A" strokeWidth="4" strokeLinecap="round" /><rect x="24" y="34" width="12" height="18" rx="2" fill="#A9C8E3" stroke="#2B3A55" strokeWidth="2" /></svg>
-            <Coco pose="sleep" size={56} bob={false} className="-ml-4" />
+            <PixelCoco pose="loaf" scale={2} className="-mb-3 -ml-8 -mt-10" />
           </div>
         </Card>
         <Card title="Memories" sub="Photo wall" onClick={() => { writeLocal("memTab", "album"); onNav("memories"); }} tilt={-1}>

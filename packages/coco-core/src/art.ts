@@ -112,16 +112,16 @@ function sitting(o: string, acc: boolean, mode: Parameters<typeof eyes>[3], opts
     : `<path d="M148 172 Q190 160 182 118" stroke="${o}" stroke-width="18" fill="none" stroke-linecap="round"/><path d="M148 172 Q190 160 182 118" stroke="${P.fur}" stroke-width="11" fill="none" stroke-linecap="round"/>`;
   const body = puff
     ? `<path d="${spikyPath(100, 146, 66, 50)}" fill="${P.fur}" stroke="${o}" stroke-width="3.5" stroke-linejoin="round"/>`
-    : `<ellipse cx="100" cy="146" rx="64" ry="50" fill="${P.fur}" stroke="${o}" stroke-width="3.5"/>` +
-      `<ellipse cx="78" cy="132" rx="20" ry="12" fill="${P.furShine}" opacity=".7"/>`;
+    : `<ellipse cx="100" cy="146" rx="74" ry="53" fill="${P.fur}" stroke="${o}" stroke-width="3.5"/>` +
+      `<ellipse cx="72" cy="134" rx="22" ry="12" fill="${P.furShine}" opacity=".7"/>`;
   return (
     tail + body +
-    `<ellipse cx="78" cy="190" rx="16" ry="9" fill="${P.fur}" stroke="${o}" stroke-width="3"/>` +
-    `<ellipse cx="122" cy="190" rx="16" ry="9" fill="${P.fur}" stroke="${o}" stroke-width="3"/>` +
+    `<ellipse cx="74" cy="192" rx="17" ry="9" fill="${P.fur}" stroke="${o}" stroke-width="3"/>` +
+    `<ellipse cx="126" cy="192" rx="17" ry="9" fill="${P.fur}" stroke="${o}" stroke-width="3"/>` +
     `<path d="M72 190 v5 M80 190 v5 M116 190 v5 M124 190 v5" stroke="#555" stroke-width="1.5" stroke-linecap="round"/>` +
     ears(100, 38, o, puff) +
     (puff ? `<path d="${spikyPath(100, 92, 56, 46, 20)}" fill="${P.fur}" stroke="${o}" stroke-width="3.5" stroke-linejoin="round"/>`
-          : `<ellipse cx="100" cy="92" rx="56" ry="46" fill="${P.fur}" stroke="${o}" stroke-width="3.5"/>`) +
+          : `<ellipse cx="100" cy="92" rx="60" ry="47" fill="${P.fur}" stroke="${o}" stroke-width="3.5"/>`) +
     face(100, 90, mode, o, opts.mouth) +
     (acc ? scarf(100, 126, o) + hat(100, 34, o) : "")
   );
@@ -129,7 +129,7 @@ function sitting(o: string, acc: boolean, mode: Parameters<typeof eyes>[3], opts
 
 function sleeping(o: string, acc: boolean) {
   return (
-    `<ellipse cx="108" cy="156" rx="78" ry="38" fill="${P.fur}" stroke="${o}" stroke-width="3.5"/>` +
+    `<ellipse cx="108" cy="154" rx="84" ry="42" fill="${P.fur}" stroke="${o}" stroke-width="3.5"/>` +
     `<path d="M40 176 Q100 198 170 176" stroke="${o}" stroke-width="16" fill="none" stroke-linecap="round"/>` +
     `<path d="M40 176 Q100 198 170 176" stroke="${P.fur}" stroke-width="10" fill="none" stroke-linecap="round"/>` +
     `<g transform="translate(-28 48) scale(.82)">` + ears(100, 38, o) +
