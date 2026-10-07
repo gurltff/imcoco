@@ -2,6 +2,19 @@ import { motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { updateGame, useGame } from "../game/state";
 import { CAT_CURSOR, Hud, PixelCoco, SHEETS, Toast, YellowBtn } from "../game/ui";
+import { readLocal } from "../lib/store";
+import { DEFAULT_GAME, type GameState } from "../game/state";
+import meadow from "../game/sprites/bg-meadow.png";
+import garden from "../game/sprites/bg-garden.png";
+import stage from "../game/sprites/bg-stage.png";
+import boxSheet from "../game/sprites/box.png";
+
+const BG = { yarn: meadow, laser: garden, box: stage };
+/** Coco gets visibly wider and a bit taller as his chonk level rises. */
+export const chonkScale = () => {
+  const c = (readLocal<GameState>("game", DEFAULT_GAME).chonk ?? 10) / 100;
+  return { x: 1.05 + c * 0.6, y: 1 + c * 0.22 };
+};
 import { coco } from "../lib/audio";
 import type { Screen } from "../lib/nav";
 
@@ -21,7 +34,9 @@ function useCocoSprite(size: number) {
     st.backgroundImage = `url(${sheet.url})`;
     st.backgroundSize = `${sheet.frames * size}px ${size}px`;
     st.backgroundPosition = `${-f * size}px 0`;
-    st.transform = `translate(${x - size * 0.51}px, ${y - size - hop}px) scaleX(${dir < 0 ? -1 : 1})`;
+    const f2 = chonkScale();
+    st.transformOrigin = "50% 100%";
+    st.transform = `translate(${x - size * 0.51}px, ${y - size - hop}px) scale(${(dir < 0 ? -1 : 1) * f2.x}, ${f2.y})`;
   };
   return { el, set };
 }
@@ -65,7 +80,7 @@ function Laser({ flash }: { flash: (t: string) => void }) {
   };
   return (
     <div ref={area} onPointerMove={move} onPointerDown={move} onPointerLeave={() => (st.current.auto = true)} className="relative h-full touch-none overflow-hidden">
-      <p className="absolute inset-x-0 top-2 text-center text-lg text-black/50">Move your finger or mouse. Coco hunts the dot.</p>
+      <p className="absolute inset-x-6 top-2 rounded-md bg-white/75 text-center text-lg text-black/70">Move your finger or mouse. Coco hunts the dot.</p>
       <div ref={dot} className="absolute left-0 top-0 h-[18px] w-[18px] rounded-full border-2 border-black bg-sun" style={{ boxShadow: "0 0 12px 4px rgba(255,233,92,.9)" }} />
       <div ref={sprite.el} className="pointer-events-none absolute left-0 top-0" style={{ width: S, height: S, imageRendering: "pixelated", backgroundRepeat: "no-repeat" }} />
     </div>
@@ -107,8 +122,8 @@ function Yarn({ flash }: { flash: (t: string) => void }) {
   const bat = () => { const s = st.current; s.vy = -520; s.vx = (Math.random() - 0.5) * 500; };
   return (
     <div ref={area} className="relative h-full overflow-hidden">
-      <p className="absolute inset-x-0 top-2 text-center text-lg text-black/50">Tap the yarn ball to toss it. Each bat = +1 🧶</p>
-      <div className="absolute inset-x-0 bottom-3 border-t-2 border-black" />
+      <p className="absolute inset-x-6 top-2 rounded-md bg-white/75 text-center text-lg text-black/70">Tap the yarn ball to toss it. Each bat = +1 🧶</p>
+      
       <button aria-label="Toss the yarn" ref={ball as any} onPointerDown={bat} className="absolute left-0 top-0" style={{ width: R * 2, height: R * 2 }}>
         <svg viewBox="0 0 32 32" className="h-full w-full"><circle cx="16" cy="16" r="14" fill="#FFE95C" stroke="#111" strokeWidth="2" /><path d="M6 10 q10 6 20 -2 M4 17 q12 6 24 -4 M8 26 q10 -4 16 -14" fill="none" stroke="#111" strokeWidth="1.6" /></svg>
       </button>
@@ -142,7 +157,7 @@ function BoxGame({ flash }: { flash: (t: string) => void }) {
   };
   return (
     <div className="flex h-full flex-col items-center justify-center gap-6 px-3">
-      <p className="text-center text-xl">Coco hides in a box. Keep your eye on him!</p>
+      <p className="rounded-md bg-black/40 px-3 py-1 text-center text-xl text-[#ffe9a8]">Coco hides in a box. Keep your eye on him!</p>
       <div className="relative h-36 w-full max-w-[340px]">
         {[0, 1, 2].map((box) => {
           const slot = order.indexOf(box);
@@ -151,16 +166,16 @@ function BoxGame({ flash }: { flash: (t: string) => void }) {
             <motion.button key={box} onClick={() => pick(box)} aria-label={`Box ${slot + 1}`}
               className="absolute bottom-0 flex w-[30%] flex-col items-center" animate={{ left: `${slot * 35}%` }} transition={{ type: "spring", stiffness: 300, damping: 26 }}>
               <motion.div animate={{ y: open && box === cat ? -18 : 40, opacity: open && box === cat ? 1 : 0 }} className="-mb-10 h-20">
-                <PixelCoco scale={2} />
+                <PixelCoco pose="sit" scale={2} />
               </motion.div>
-              <svg viewBox="0 0 80 60" className="relative w-full"><path d="M6 18 h68 v38 h-68z" fill="#d4a26a" stroke="#3b2a20" strokeWidth="2.5" strokeLinejoin="round" /><path d={open ? "M6 18 l-4 -16 M74 18 l4 -16" : "M6 18 l34 -10 l34 10"} fill="none" stroke="#3b2a20" strokeWidth="2.5" strokeLinecap="round" /><path d="M30 34 h20" stroke="#8a5a34" strokeWidth="2" /></svg>
+              <div className="pixel-sheet relative w-full" style={{ aspectRatio: "32 / 30", backgroundImage: `url(${boxSheet})`, backgroundSize: "200% 100%", backgroundPosition: open ? "100% 0" : "0 0" }} />
             </motion.button>
           );
         })}
       </div>
       {(phase === "ready" || phase === "result") && <YellowBtn onClick={start} className="px-8 text-2xl">{phase === "ready" ? "Start" : "Again!"}</YellowBtn>}
-      {phase === "pick" && <p className="text-2xl font-bold">Which box?</p>}
-      {phase === "shuffle" && <p className="text-2xl">shuffle shuffle…</p>}
+      {phase === "pick" && <p className="rounded-md bg-black/40 px-3 text-2xl font-bold text-[#ffe9a8]">Which box?</p>}
+      {phase === "shuffle" && <p className="rounded-md bg-black/40 px-3 text-2xl text-[#ffe9a8]">shuffle shuffle…</p>}
     </div>
   );
 }
@@ -179,7 +194,7 @@ export function Play({ onNav }: { onNav: (s: Screen) => void }) {
             className={`min-h-[44px] flex-1 rounded-md border-[2.5px] border-black text-xl ${tab === id ? "bg-sun font-bold" : "bg-white"}`} style={{ boxShadow: "1px 2px 0 #000" }}>{l}</button>
         ))}
       </div>
-      <div className="relative m-3 flex-1 overflow-hidden rounded-lg border-[2.5px] border-black bg-gradient-to-b from-[#cfe6e1] from-70% to-[#9fd174] to-70% lg:mx-auto lg:mb-6 lg:w-full lg:max-w-3xl">
+      <div className="pixel-sheet relative m-3 flex-1 overflow-hidden rounded-lg border-[2.5px] border-black lg:mx-auto lg:mb-6 lg:w-full lg:max-w-3xl" style={{ backgroundImage: `url(${BG[tab]})`, backgroundSize: "cover", backgroundPosition: "center bottom" }}>
         {tab === "yarn" && <Yarn flash={flash} />}
         {tab === "laser" && <Laser flash={flash} />}
         {tab === "box" && <BoxGame flash={flash} />}

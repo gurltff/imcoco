@@ -331,7 +331,10 @@ export class WorldEngine {
   /** On-screen size of Coco's body (CSS px), used for hit-testing and bubbles. */
   private cocoSize() { return 32 * this.spriteK() * PX * this.fatScale(); }
   /** Coco is a chonk: wider than the base sprite, rounder with every meal, plus a puff right after eating. */
-  private fatScale() { return 1.18 + this.cb.getChonk() / 100 * 0.3 + this.fullBelly * 0.18; }
+  private fatScale() { return 1.05 + this.cb.getChonk() / 100 * 0.6 + this.fullBelly * 0.18; }
+  /** taller too as he gets chonkier (but mostly wider) */
+  private fatY() { return 1 + this.cb.getChonk() / 100 * 0.22 + this.fullBelly * 0.05; }
+  private drawingCoco = false;
   private fullBelly = 0; // 0..1, decays after a meal
 
   private draw() {
@@ -577,7 +580,7 @@ export class WorldEngine {
     const ctx = this.ctx; const k = this.spriteK() * PX;
     ctx.save();
     ctx.translate(Math.round(x), Math.round(y));
-    ctx.scale((flip ? -1 : 1) * sx, sy);
+    ctx.scale((flip ? -1 : 1) * sx, sy * (this.drawingCoco ? this.fatY() : 1));
     ctx.drawImage(img, frame * 48, 0, 48, 48, -24.5 * k, -48 * k, 48 * k, 48 * k);
     ctx.restore();
   }
@@ -585,7 +588,9 @@ export class WorldEngine {
   private idleKind: "stand" | "sit" | "loaf" = "sit";
   private lastState = "";
 
-  private drawCoco() {
+  private drawCoco() { this.drawingCoco = true; try { this.drawCocoInner(); } finally { this.drawingCoco = false; } }
+
+  private drawCocoInner() {
     const c = this.coco;
     if (c.state !== this.lastState) {
       // pick a resting pose each time he stops: stand, sit up, or (once learned) loaf
