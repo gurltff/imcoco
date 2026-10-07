@@ -209,6 +209,7 @@ export class WorldEngine {
 
   private update(dt: number) {
     this.time += dt;
+    this.fullBelly = Math.max(0, this.fullBelly - dt / 25);
     const c = this.coco;
     const n = this.isNight();
     if (n !== this.night) { this.night = n; this.cb.onNightChange(n); if (n) { c.state = "walk"; this.placeSleepTarget(); } }
@@ -281,7 +282,7 @@ export class WorldEngine {
         if (this.pendingEat && this.bowl) { this.pendingEat = false; c.state = "eat"; c.t = 3.6; c.dir = -1; this.munchT = 0; }
         else if (this.drum) { this.drum = false; c.state = "idle"; c.t = 3; this.float("tap tap tap (bowl)", { x: this.cocoScreen().x, y: this.cocoScreen().y - 80 }, INK, 14); }
         else if (this.night) { c.state = "sleep"; c.t = 999; }
-        else { c.state = "idle"; c.t = 1.5 + Math.random() * 3; }
+        else { c.state = "idle"; c.t = 4 + Math.random() * 4; }
       }
     }
     if (c.state === "eat") {
@@ -291,7 +292,7 @@ export class WorldEngine {
         const p = this.cocoScreen();
         this.float(["NOM", "MUNCH", "nom nom", "CRUNCH", "*chomp*"][Math.floor(Math.random() * 5)], { x: p.x + (Math.random() - 0.5) * 50, y: p.y - 60 }, INK, 16 + Math.random() * 6);
       }
-      if (c.t <= 0) { const f = this.bowl!; this.bowl = null; c.state = "happy"; c.t = 2; this.cb.onFed(f); this.float("*satisfied burp*", { x: this.cocoScreen().x, y: this.cocoScreen().y - 80 }, INK, 14); }
+      if (c.t <= 0) { this.fullBelly = 1; this.float("*belly grows*", { x: this.cocoScreen().x, y: this.cocoScreen().y - 100 }, INK, 14); const f = this.bowl!; this.bowl = null; c.state = "happy"; c.t = 2; this.cb.onFed(f); this.float("*satisfied burp*", { x: this.cocoScreen().x, y: this.cocoScreen().y - 80 }, INK, 14); }
     }
     if (c.t <= 0) this.decide();
 
@@ -317,10 +318,10 @@ export class WorldEngine {
       c.t = 20; return;
     }
     const r = Math.random();
-    if (r < 0.2) { this.goTo(4.7, 2.2, "walk"); this.napNext = true; return; }
-    if (r < 0.38) { c.state = "chase"; c.t = 4 + Math.random() * 2; c.speed = 1.2; return; }
-    if (r < 0.75) { this.goTo(0.8 + Math.random() * 6.6, 2.8 + Math.random() * 4.6, "walk"); return; }
-    c.state = "idle"; c.t = 2 + Math.random() * 3;
+    if (r < 0.12) { this.goTo(4.7, 2.2, "walk"); this.napNext = true; return; }
+    if (r < 0.24) { c.state = "chase"; c.t = 3 + Math.random() * 2; c.speed = 1.2; return; }
+    if (r < 0.5) { this.goTo(0.8 + Math.random() * 6.6, 2.8 + Math.random() * 4.6, "walk"); return; }
+    c.state = "idle"; c.t = 5 + Math.random() * 5; // a proper sit
     if (this.napNext) { this.napNext = false; c.state = "nap"; c.t = 8 + Math.random() * 6; }
   }
   private napNext = false;
@@ -328,7 +329,10 @@ export class WorldEngine {
   // ---------- drawing (pixel-art pass at 1/PX resolution, then scaled up crisply) ----------
   private spriteK() { return Math.max(1, Math.round(this.TW / 55)); }
   /** On-screen size of Coco's body (CSS px), used for hit-testing and bubbles. */
-  private cocoSize() { return 32 * this.spriteK() * PX * (1 + this.cb.getChonk() / 100 * 0.15); }
+  private cocoSize() { return 32 * this.spriteK() * PX * this.fatScale(); }
+  /** Coco is a chonk: wider than the base sprite, rounder with every meal, plus a puff right after eating. */
+  private fatScale() { return 1.18 + this.cb.getChonk() / 100 * 0.3 + this.fullBelly * 0.18; }
+  private fullBelly = 0; // 0..1, decays after a meal
 
   private draw() {
     const ctx = this.ctx;
@@ -587,20 +591,23 @@ export class WorldEngine {
       // pick a resting pose each time he stops: stand, sit up, or (once learned) loaf
       if (c.state === "idle") {
         const r = Math.random();
-        this.idleKind = this.cb.getBehaviours() >= 2 && r < 0.3 ? "loaf" : r < 0.7 ? "sit" : "stand";
+        this.idleKind = this.cb.getBehaviours() >= 2 && r < 0.25 ? "loaf" : r < 0.85 ? "sit" : "stand";
       }
       this.lastState = c.state;
     } const ctx = this.ctx; const p = this.cocoScreen(); const s = this.cocoSize();
-    const chonk = 1 + this.cb.getChonk() / 100 * 0.15;
+    const chonk = this.fatScale();
+    // belly jiggle: a soft squash-and-stretch wobble, stronger right after food
+    const wob = Math.sin(this.time * (c.state === "walk" || c.state === "chase" ? 14 : 3)) * (0.025 + this.fullBelly * 0.05);
     ctx.fillStyle = "rgba(40,60,30,.22)"; ctx.beginPath(); ctx.ellipse(p.x, p.y, s * 0.45, s * 0.12, 0, 0, Math.PI * 2); ctx.fill();
     const flip = c.dir < 0;
     const moving = c.state === "walk" || c.state === "chase" || c.state === "zoom";
     if (moving) {
       const fps = c.state === "zoom" ? 22 : c.state === "chase" ? 16 : 11;
-      this.sprite(this.sheet("run"), Math.floor(this.time * fps) % 6, p.x, p.y, flip, chonk);
+      this.sprite(this.sheet("run"), Math.floor(this.time * fps) % 6, p.x, p.y, flip, chonk * (1 + wob), 1 - wob);
     } else if (c.state === "sleep" || c.state === "nap") {
-      const br = 1 + Math.sin(this.time * 2) * 0.03;
-      this.sprite(this.sheet("sleep"), 0, p.x, p.y, flip, chonk * 1.04, 0.9 * br);
+      // curled up in a loaf, eyes shut, slow breathing belly
+      const br = 1 + Math.sin(this.time * 2) * 0.04;
+      this.sprite(this.sheet("loaf"), 2, p.x, p.y, flip, chonk * br, 1 / br);
     } else if (c.state === "puff") {
       const sh = Math.sin(this.time * 40) * 1.5;
       this.sprite(this.sheet("idle"), 0, p.x + sh, p.y, flip, chonk * 1.18, 1.15);
@@ -609,10 +616,10 @@ export class WorldEngine {
       this.sprite(this.sheet("loaf"), 2 + (Math.floor(this.time * 0.8) % 2), p.x, p.y, flip, chonk * br, 1 / br);
     } else if (c.state === "happy") {
       const hop = Math.abs(Math.sin(this.time * 9)) * 6 + this.jump * 30;
-      this.sprite(this.sheet("happy"), Math.floor(this.time * 4) % 2, p.x, p.y - hop, flip, chonk);
+      this.sprite(this.sheet("happy"), Math.floor(this.time * 4) % 2, p.x, p.y - hop, flip, chonk * (1 + wob * 2), 1 - wob * 2);
     } else if (c.state === "idle" && this.idleKind === "sit") {
       const hop = this.jump > 0 ? Math.sin((this.jump / 0.18) * Math.PI) * 8 : 0;
-      this.sprite(this.sheet("sit"), Math.floor(this.time * 5) % 8, p.x, p.y - hop, false, chonk);
+      this.sprite(this.sheet("sit"), Math.floor(this.time * 5) % 8, p.x, p.y - hop, false, chonk * (1 + wob), 1 - wob);
     } else if (c.state === "idle" && this.idleKind === "loaf") {
       const seq = [0, 0, 1, 2, 2, 2, 3, 1];
       this.sprite(this.sheet("loaf"), seq[Math.floor(this.time * 0.8) % seq.length], p.x, p.y, flip, chonk * (1 + Math.sin(this.time * 2) * 0.02));
@@ -620,7 +627,7 @@ export class WorldEngine {
       const f = Math.floor(this.time * 8) % 12;
       const bob = c.state === "eat" ? (Math.floor(this.time * 5) % 2) * 3 : 0;
       const hop = this.jump > 0 ? Math.sin((this.jump / 0.18) * Math.PI) * 8 : 0;
-      this.sprite(this.sheet("idle"), f, p.x, p.y + bob - hop, flip, chonk);
+      this.sprite(this.sheet(c.state === "eat" ? "sit" : "idle"), c.state === "eat" ? 0 : f, p.x, p.y + bob - hop, flip, chonk * (1 + wob), 1 - wob);
     }
   }
 
