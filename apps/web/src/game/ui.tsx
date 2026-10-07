@@ -58,11 +58,11 @@ export function RoundBtn({ label, onClick, children, big }: { label: string; onC
   );
 }
 
-export function Hud({ g, onBack, children }: { g: GameState; onBack: () => void; children?: ReactNode }) {
+export function Hud({ g, onBack, children, strip = true }: { g: GameState; onBack: () => void; children?: ReactNode; strip?: boolean }) {
   const need = xpToNext(g.level);
   return (
     <div className="pointer-events-none absolute inset-x-0 top-0 z-10 font-game">
-      <div className="hud-strip pointer-events-auto px-3 pb-2 pt-[max(env(safe-area-inset-top),10px)]">
+      <div className={`${strip ? "hud-strip" : ""} pointer-events-none px-3 pb-2 pt-[max(env(safe-area-inset-top),10px)] [&>*]:pointer-events-auto`}>
       <div className="flex items-center gap-2">
         <button aria-label="Back to Coco's Corner" onClick={onBack} className="game-btn h-10 w-10 text-xl leading-none">‹</button>
         <div className="flex flex-1 items-center lg:max-w-md">

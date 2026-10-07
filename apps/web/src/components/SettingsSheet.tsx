@@ -49,12 +49,12 @@ export function SettingsSheet({ open, onClose }: { open: boolean; onClose: () =>
                   onPointerUp={() => coco.meow("tap")} />
               </div>
               <div className="py-3">
-                <p className="font-hand text-xl leading-tight">Night theme</p>
-                <p className="text-xs text-navy/60">Soft navy colours for using the app in bed. Auto turns on from 8pm to 6am.</p>
-                <div className="mt-2 flex rounded-full border-2 border-navy/60 bg-baby p-1" role="radiogroup" aria-label="Night theme">
-                  {(["auto", "day", "night"] as const).map((t) => (
+                <p className="font-hand text-xl leading-tight">Theme</p>
+                <p className="text-xs text-navy/60">Dark mode is a soft navy for using the app at night. Coco's world follows real day and night on its own.</p>
+                <div className="mt-2 flex rounded-full border-2 border-navy/60 bg-baby p-1" role="radiogroup" aria-label="Theme">
+                  {(["light", "dark"] as const).map((t) => (
                     <button key={t} role="radio" aria-checked={s.theme === t} onClick={() => patch({ theme: t })}
-                      className={`min-h-[40px] flex-1 rounded-full font-hand text-lg capitalize ${s.theme === t ? "bg-cream text-cherry" : ""}`}>{t === "day" ? "Always day" : t === "night" ? "Always night" : "Auto"}</button>
+                      className={`min-h-[40px] flex-1 rounded-full font-hand text-lg ${s.theme === t ? "bg-cream text-cherry" : ""}`}>{t === "light" ? "☀️ Light" : "🌙 Dark"}</button>
                   ))}
                 </div>
               </div>

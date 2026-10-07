@@ -55,10 +55,8 @@ export default function App() {
   };
   useEffect(() => { scroller.current?.scrollTo({ top: 0 }); }, [screen]);
 
-  // Night theme: on by choice, or automatically from 8pm to 6am (not inside the game screens)
-  const [hour, setHour] = useState(() => new Date().getHours());
-  useEffect(() => { const id = setInterval(() => setHour(new Date().getHours()), 60_000); return () => clearInterval(id); }, []);
-  const night = !game && (settings.theme === "night" || (settings.theme === "auto" && (hour >= 20 || hour < 6)));
+  // Dark mode is a manual choice (light by default); not applied inside the game screens
+  const night = !game && settings.theme === "dark";
   useEffect(() => { document.documentElement.classList.toggle("theme-night", night); }, [night]);
 
   const wake = async () => {

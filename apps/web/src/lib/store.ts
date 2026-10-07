@@ -38,8 +38,8 @@ export interface Settings {
   captions: boolean;
   reducedMotion: boolean;
   comfortDetection: boolean;
-  /** "auto" switches to the soft navy theme from 8pm to 6am */
-  theme: "auto" | "day" | "night";
+  /** app colour theme (Coco's world has its own real day/night cycle) */
+  theme: "light" | "dark";
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -48,10 +48,12 @@ export const DEFAULT_SETTINGS: Settings = {
   captions: true,
   reducedMotion: false,
   comfortDetection: false,
-  theme: "auto",
+  theme: "light",
 };
 
 export function useSettings() {
   const [s, set] = useLocal<Settings>("settings", DEFAULT_SETTINGS);
-  return [{ ...DEFAULT_SETTINGS, ...s }, set] as const;
+  const merged = { ...DEFAULT_SETTINGS, ...s };
+  if (merged.theme !== "dark") merged.theme = "light"; // older saved values ("auto"/"day") -> light
+  return [merged, set] as const;
 }

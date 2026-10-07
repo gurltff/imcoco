@@ -118,7 +118,7 @@ export function World({ onNav }: { onNav: (s: Screen) => void }) {
     <div className="relative h-full overflow-hidden bg-[#a8cdc6] font-game text-black">
       <canvas ref={canvas} style={{ cursor: CAT_CURSOR }} className="absolute inset-0 h-full w-full touch-manipulation" aria-label="Coco's little house and yard. Tap Coco to pet him." />
 
-      <Hud g={g} onBack={() => onNav("home")}>
+      <Hud g={g} onBack={() => onNav("home")} strip={false}>
         <div className="pointer-events-auto mt-2 flex items-start justify-between">
           <div className="rounded-md border-2 border-black bg-white px-2 py-0.5 text-base">
             Chonk: <b>{chonkTitle(g.chonk)}</b> <span className="text-black/50">({g.chonk}/100)</span>

@@ -124,10 +124,11 @@ export class WorldEngine {
     this.canvas.height = Math.round(r.height * this.dpr);
     this.low.width = Math.ceil(r.width / PX);
     this.low.height = Math.ceil(r.height / PX);
-    this.TW = Math.min(this.W / 7.4, (this.H - 200) / 4.4, 120);
+    // size the island to fit, and keep the house roof clear of the floating buttons at the top
+    this.TW = Math.min(this.W / 8.6, (this.H - 250) / 6.9, 120);
     this.TH = this.TW / 2;
     this.ox = this.W / 2;
-    this.oy = Math.max(110, (this.H - 8 * this.TH) / 2 + 10);
+    this.oy = Math.min(this.H - this.TW * 4.75, Math.max(150 + this.TW * 2.4, (this.H - 8 * this.TH) / 2));
   }
 
   private img(key: string, make: () => string) {
