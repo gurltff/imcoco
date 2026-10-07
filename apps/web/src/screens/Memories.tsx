@@ -33,7 +33,7 @@ export function Memories() {
         ))}
       </div>
       <AnimatePresence mode="wait">
-        <motion.div key={tab} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.25 }}>
+        <motion.div key={tab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6, transition: { duration: 0.1 } }} transition={{ duration: 0.2 }}>
           {tab === "album" && <Album />}
           {tab === "letters" && <Letters />}
           {tab === "birthday" && <Birthday />}

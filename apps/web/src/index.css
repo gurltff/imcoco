@@ -13,7 +13,18 @@
   --c-cream: 34 44 70; --c-creamdeep: 28 37 60; --c-baby: 58 82 122; --c-babydeep: 120 160 205;
   --c-cherry: 240 112 118; --c-navy: 228 233 245; --c-card: 40 52 82;
 }
-.theme-night .bg-white, .theme-night .bg-white\/70, .theme-night .bg-white\/75 { background-color: rgb(var(--c-card) / .9); }
+/* every white surface (cards, captions, inputs, polaroids) becomes a navy card */
+.theme-night [class*="bg-white"] { background-color: rgb(var(--c-card) / .95); }
+.theme-night .sticker { box-shadow: 0 3px 0 0 rgba(0,0,0,.35), 0 8px 18px -8px rgba(0,0,0,.5); }
+/* hand-drawn fills: dim the bright baby-blue and cream so they don't glare at night */
+.theme-night svg [fill="#A9C8E3"] { fill: #4F6E9F; }
+.theme-night svg [fill="#FBF3DC"] { fill: #33415F; }
+.theme-night svg [fill="#fff"], .theme-night svg [fill="#FFFFFF"] { fill: #E9EEF7; }
+.theme-night svg [stroke="#C8323A"] { stroke: #F07076; }
+.theme-night .bg-cherry { background-color: #B9444C; }
+/* text drawn on light shapes (cake, yellow buttons) stays dark so it's readable */
+.theme-night svg text[fill="#2B3A55"] { fill: #2B3A55; }
+.theme-night .bg-sun { color: #2B3A55; }
 .theme-night .paper { background-color: #1B2338; background-image: radial-gradient(rgba(255,255,255,.05) 1px, transparent 1px); }
 .theme-night .gingham { background-color: #24324f; background-image: repeating-linear-gradient(0deg, rgba(90,120,170,.5) 0 8px, transparent 8px 16px), repeating-linear-gradient(90deg, rgba(90,120,170,.5) 0 8px, transparent 8px 16px); }
 .theme-night .gingham-red { background-color: #3a2434; background-image: repeating-linear-gradient(0deg, rgba(240,112,118,.18) 0 7px, transparent 7px 14px), repeating-linear-gradient(90deg, rgba(240,112,118,.18) 0 7px, transparent 7px 14px); }

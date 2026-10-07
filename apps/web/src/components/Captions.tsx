@@ -18,7 +18,7 @@ export function Captions() {
       <AnimatePresence>
         {items.map((c) => (
           <motion.div key={c.id} initial={{ opacity: 0, y: -8, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -6 }}
-            className="rounded-full border-2 border-navy/70 bg-white/95 px-3 py-1 font-hand text-base text-navy shadow-sticker">
+            className="rounded-full border-2 border-navy/60 bg-white/95 px-2.5 py-0.5 font-hand text-sm text-navy shadow-sticker">
             🔊 {c.text}
           </motion.div>
         ))}
