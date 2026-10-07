@@ -14,9 +14,9 @@ export function PawWipe({ dir }: { dir: number }) {
         return (
           <motion.span key={i} className={`absolute ${i % 2 ? "text-cherry" : "text-navy"}`}
             style={{ left: `${x}%`, top: `${y}%`, rotate: dir > 0 ? 55 : -55 }}
-            initial={{ opacity: 0, scale: 0.6 }} animate={{ opacity: [0, 0.55, 0], scale: [0.6, 1, 1] }}
-            transition={{ duration: 0.6, delay: i * 0.045, ease: [0.22, 1, 0.36, 1] }}>
-            <Doodle name="paw" size={42} />
+            initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: [0, 0.9, 0.9, 0], scale: [0.5, 1.08, 1, 1] }}
+            transition={{ duration: 1.3, delay: i * 0.13, times: [0, 0.2, 0.65, 1], ease: "easeOut" }}>
+            <Doodle name="paw" size={46} />
           </motion.span>
         );
       })}

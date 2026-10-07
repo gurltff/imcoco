@@ -84,8 +84,8 @@ export default function App() {
                 style={{ willChange: "opacity, transform" }}
                 variants={{
                   enter: (d: number) => ({ x: d * 10, y: 8, opacity: 0 }),
-                  center: { x: 0, y: 0, opacity: 1, transition: { duration: 0.34, ease: [0.22, 1, 0.36, 1] } },
-                  exit: { opacity: 0, y: -4, transition: { duration: 0.14, ease: "easeIn" } },
+                  center: { x: 0, y: 0, opacity: 1, transition: { duration: 0.75, ease: [0.22, 1, 0.36, 1], delay: 0.15 } },
+                  exit: { opacity: 0, y: -4, transition: { duration: 0.4, ease: "easeInOut" } },
                 }}
                 initial="enter" animate="center" exit="exit">
                 {screen === "home" && <Home onNav={nav} />}
