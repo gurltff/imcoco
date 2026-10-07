@@ -63,3 +63,10 @@ input[type=range] { accent-color: #C8323A; }
 /* Pixel-art sprite sheets */
 .pixel-sheet { image-rendering: pixelated; background-repeat: no-repeat; background-position: 0 0; }
 @keyframes pxsheet { to { background-position: var(--end) 0; } }
+
+/* Little pixel cat cursors (my own pixel art, inspired by cat cursor packs) */
+html, body { cursor: url("./game/sprites/cursor-default.png") 0 0, auto; }
+a, button, [role="button"], [role="tab"], [role="switch"], label, summary, select, input[type="range"], input[type="checkbox"] { cursor: url("./game/sprites/cursor-pointer.png") 4 0, pointer; }
+textarea, input[type="text"], input:not([type]), input[type="url"] { cursor: url("./game/sprites/cursor-text.png") 3 6, text; }
+button:disabled, [aria-disabled="true"] { cursor: url("./game/sprites/cursor-no.png") 4 4, not-allowed; }
+.cursor-wait, .cursor-wait * { cursor: url("./game/sprites/cursor-wait.png") 4 4, wait !important; }

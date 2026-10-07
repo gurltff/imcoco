@@ -6,6 +6,7 @@ import { Doodle, DoodleScatter } from "../components/Doodles";
 import { coco } from "../lib/audio";
 import { deleteMemory, listMemories, putMemory, type Memory } from "../lib/db";
 import { useLocal } from "../lib/store";
+import { Sticker } from "../game/ui";
 
 type Tab = "album" | "letters" | "birthday";
 
@@ -67,10 +68,20 @@ function Album() {
       <input ref={input} type="file" accept="image/*,video/*" multiple className="hidden" onChange={(e) => { add(e.target.files); e.target.value = ""; }} />
       <button className="pill w-full bg-cherry text-cream lg:mx-auto lg:flex lg:w-auto lg:px-8" onClick={() => input.current?.click()}>+ Add photos & videos of Coco</button>
       <p className="mt-1 text-center text-xs text-navy/60">Saved only on this device.</p>
+      <div className="sticker mt-4 p-3">
+        <p className="smallcaps">Coco sticker sheet · tap one</p>
+        <div className="no-scrollbar mt-1 flex gap-1 overflow-x-auto rounded-xl bg-[#f6a8ae]/60 p-2">
+          {[0, 1, 2, 3, 4, 5].map((i) => (
+            <motion.button key={i} whileHover={{ rotate: i % 2 ? 4 : -4, y: -3 }} whileTap={{ scale: 0.9 }} onClick={() => coco.meow(i === 1 ? "food" : "tap")} aria-label="Coco sticker" className="shrink-0">
+              <Sticker i={i} scale={2} />
+            </motion.button>
+          ))}
+        </div>
+      </div>
       <div className="gingham mt-4 min-h-[300px] rounded-[1.4rem] border-[2.5px] border-navy/80 p-3 shadow-sticker">
         {items.length === 0 ? (
           <div className="grid min-h-[270px] place-items-center rounded-2xl bg-cream/90 p-4 text-center">
-            <div><Coco pose="sit" size={110} /><p className="font-hand text-xl">The wall is waiting for Coco's best angles.</p></div>
+            <div className="flex flex-col items-center"><Sticker i={0} scale={3} /><p className="font-hand text-xl">The wall is waiting for Coco's best angles.</p></div>
           </div>
         ) : (
           <div className="columns-2 gap-3 md:columns-3 lg:columns-4 lg:gap-5">

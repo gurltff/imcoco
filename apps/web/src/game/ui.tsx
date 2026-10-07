@@ -4,13 +4,24 @@ import { xpToNext, type GameState } from "./state";
 import idleUrl from "./sprites/coco-idle.png";
 import runUrl from "./sprites/coco-run.png";
 import sleepUrl from "./sprites/coco-sleep.png";
-import cursorUrl from "./sprites/cursor.png";
+import cursorUrl from "./sprites/cursor-default.png";
+import stickersUrl from "./sprites/stickers.png";
+import sitUrl from "./sprites/coco-sit.png";
+import loafUrl from "./sprites/coco-loaf.png";
 
 export const SHEETS = {
   idle: { url: idleUrl, frames: 12, fps: 8 },
   run: { url: runUrl, frames: 6, fps: 12 },
   sleep: { url: sleepUrl, frames: 1, fps: 1 },
+  sit: { url: sitUrl, frames: 8, fps: 5 },
+  loaf: { url: loafUrl, frames: 4, fps: 1 },
 };
+
+/** One die-cut pixel sticker of Coco (0–5) from the sticker sheet. */
+export function Sticker({ i, scale = 2, className = "" }: { i: number; scale?: number; className?: string }) {
+  const c = 52 * scale;
+  return <div aria-hidden className={`pixel-sheet ${className}`} style={{ width: c, height: c, backgroundImage: `url(${stickersUrl})`, backgroundSize: `${6 * c}px ${c}px`, backgroundPosition: `${-i * c}px 0` }} />;
+}
 /** Little pixel Coco cursor for the game screens. */
 export const CAT_CURSOR = `url(${cursorUrl}) 0 0, auto`;
 

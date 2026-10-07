@@ -226,7 +226,7 @@ function InfoModal({ open, onClose, g, onLearn }: { open: boolean; onClose: () =
       <div className="flex gap-3">
         <div className="flex w-32 shrink-0 flex-col items-center rounded border-2 border-black bg-white p-1">
           <span className="text-base">Normal</span>
-          <PixelCoco scale={2} />
+          <PixelCoco pose="sit" scale={2} />
           <span className="text-lg">Level {g.level}</span>
         </div>
         <div className="text-lg leading-snug">

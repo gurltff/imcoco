@@ -5,6 +5,9 @@
 import idleUrl from "./sprites/coco-idle.png";
 import runUrl from "./sprites/coco-run.png";
 import sleepUrl from "./sprites/coco-sleep.png";
+import sitUrl from "./sprites/coco-sit.png";
+import loafUrl from "./sprites/coco-loaf.png";
+import happyUrl from "./sprites/coco-happy.png";
 import greyIdle from "./sprites/stray-grey-idle.png";
 import greyRun from "./sprites/stray-grey-run.png";
 import gingerIdle from "./sprites/stray-ginger-idle.png";
@@ -12,7 +15,7 @@ import gingerRun from "./sprites/stray-ginger-run.png";
 
 // Coco's sprites: "Black Cat" by Carysaurus (free asset), eyes recoloured green.
 const SHEETS: Record<string, string> = {
-  idle: idleUrl, run: runUrl, sleep: sleepUrl,
+  idle: idleUrl, run: runUrl, sleep: sleepUrl, sit: sitUrl, loaf: loafUrl, happy: happyUrl,
   "grey-idle": greyIdle, "grey-run": greyRun, "ginger-idle": gingerIdle, "ginger-run": gingerRun,
 };
 /** Size of one world pixel in CSS px (the pixel-art grain). */
@@ -575,28 +578,49 @@ export class WorldEngine {
     ctx.restore();
   }
 
+  private idleKind: "stand" | "sit" | "loaf" = "sit";
+  private lastState = "";
+
   private drawCoco() {
-    const c = this.coco; const ctx = this.ctx; const p = this.cocoScreen(); const s = this.cocoSize();
+    const c = this.coco;
+    if (c.state !== this.lastState) {
+      // pick a resting pose each time he stops: stand, sit up, or (once learned) loaf
+      if (c.state === "idle") {
+        const r = Math.random();
+        this.idleKind = this.cb.getBehaviours() >= 2 && r < 0.3 ? "loaf" : r < 0.7 ? "sit" : "stand";
+      }
+      this.lastState = c.state;
+    } const ctx = this.ctx; const p = this.cocoScreen(); const s = this.cocoSize();
     const chonk = 1 + this.cb.getChonk() / 100 * 0.15;
     ctx.fillStyle = "rgba(40,60,30,.22)"; ctx.beginPath(); ctx.ellipse(p.x, p.y, s * 0.45, s * 0.12, 0, 0, Math.PI * 2); ctx.fill();
     const flip = c.dir < 0;
     const moving = c.state === "walk" || c.state === "chase" || c.state === "zoom";
-    const loaf = c.state === "idle" && this.cb.getBehaviours() >= 2 && Math.floor(this.time / 9) % 3 === 2;
     if (moving) {
       const fps = c.state === "zoom" ? 22 : c.state === "chase" ? 16 : 11;
       this.sprite(this.sheet("run"), Math.floor(this.time * fps) % 6, p.x, p.y, flip, chonk);
-    } else if (c.state === "sleep" || c.state === "nap" || loaf) {
+    } else if (c.state === "sleep" || c.state === "nap") {
       const br = 1 + Math.sin(this.time * 2) * 0.03;
       this.sprite(this.sheet("sleep"), 0, p.x, p.y, flip, chonk * 1.04, 0.9 * br);
     } else if (c.state === "puff") {
       const sh = Math.sin(this.time * 40) * 1.5;
       this.sprite(this.sheet("idle"), 0, p.x + sh, p.y, flip, chonk * 1.18, 1.15);
+    } else if (c.state === "cuddle") {
+      const br = 1 + Math.sin(this.time * 3) * 0.03;
+      this.sprite(this.sheet("loaf"), 2 + (Math.floor(this.time * 0.8) % 2), p.x, p.y, flip, chonk * br, 1 / br);
+    } else if (c.state === "happy") {
+      const hop = Math.abs(Math.sin(this.time * 9)) * 6 + this.jump * 30;
+      this.sprite(this.sheet("happy"), Math.floor(this.time * 4) % 2, p.x, p.y - hop, flip, chonk);
+    } else if (c.state === "idle" && this.idleKind === "sit") {
+      const hop = this.jump > 0 ? Math.sin((this.jump / 0.18) * Math.PI) * 8 : 0;
+      this.sprite(this.sheet("sit"), Math.floor(this.time * 5) % 8, p.x, p.y - hop, false, chonk);
+    } else if (c.state === "idle" && this.idleKind === "loaf") {
+      const seq = [0, 0, 1, 2, 2, 2, 3, 1];
+      this.sprite(this.sheet("loaf"), seq[Math.floor(this.time * 0.8) % seq.length], p.x, p.y, flip, chonk * (1 + Math.sin(this.time * 2) * 0.02));
     } else {
       const f = Math.floor(this.time * 8) % 12;
       const bob = c.state === "eat" ? (Math.floor(this.time * 5) % 2) * 3 : 0;
-      const hop = c.state === "happy" ? Math.abs(Math.sin(this.time * 9)) * 6 + this.jump * 30 : this.jump > 0 ? Math.sin((this.jump / 0.18) * Math.PI) * 8 : 0;
-      const sq = c.state === "cuddle" ? 1 + Math.sin(this.time * 6) * 0.04 : 1;
-      this.sprite(this.sheet("idle"), f, p.x, p.y + bob - hop, flip, chonk * sq, 1 / sq);
+      const hop = this.jump > 0 ? Math.sin((this.jump / 0.18) * Math.PI) * 8 : 0;
+      this.sprite(this.sheet("idle"), f, p.x, p.y + bob - hop, flip, chonk);
     }
   }
 
