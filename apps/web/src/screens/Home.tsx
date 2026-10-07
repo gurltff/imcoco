@@ -1,6 +1,6 @@
-import { motion } from "framer-motion";
-import { useRef, useState, type ReactNode } from "react";
-import { CHECKIN_QUESTIONS, DAILY_MESSAGES, MOOD_INFO, birthdayInfo, currentMood, dailyPick, ordinal } from "@coco/core";
+import { AnimatePresence, motion } from "framer-motion";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { type CocoMood, type CocoPose, CHECKIN_QUESTIONS, DAILY_MESSAGES, MOOD_INFO, birthdayInfo, currentMood, dailyPick, ordinal } from "@coco/core";
 import { Coco } from "../components/Coco";
 import { PixelCoco } from "../game/ui";
 import { Doodle, DoodleScatter } from "../components/Doodles";
@@ -25,13 +25,22 @@ function Card({ title, sub, onClick, children, tilt = 0 }: { title: string; sub:
   );
 }
 
-function TableScene({ onPet }: { onPet: (x: number, y: number) => void }) {
+function TableScene({ onPet, pose, waving }: { onPet: (x: number, y: number) => void; pose: CocoPose; waving: boolean }) {
   const ref = useRef<HTMLButtonElement>(null);
   return (
     <div className="relative mx-auto h-[210px] w-[280px] lg:origin-top lg:scale-125 lg:mb-14">
       <button ref={ref} aria-label="Pet Coco" className="absolute left-1/2 top-0 -translate-x-1/2"
         onClick={(e) => { const r = ref.current!.parentElement!.getBoundingClientRect(); onPet(e.clientX - r.left, e.clientY - r.top); }}>
-        <Coco pose="sit" size={150} />
+        {/* says hello when the app opens (happy wiggle), then shows his mood */}
+        <motion.div animate={waving ? { rotate: [0, -6, 6, -4, 4, 0], y: [0, -6, 0, -4, 0] } : { rotate: 0, y: 0 }} transition={{ duration: 1.4, ease: "easeInOut" }} style={{ originY: 1 }}>
+          <Coco pose={pose} size={150} />
+        </motion.div>
+        <AnimatePresence>
+          {waving && (
+            <motion.span initial={{ opacity: 0, y: 6, scale: 0.8 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -6 }}
+              className="absolute -right-10 top-2 rounded-2xl rounded-bl-sm border-2 border-navy/70 bg-cream px-2 py-0.5 font-hand text-lg text-navy">hi hooman!</motion.span>
+          )}
+        </AnimatePresence>
       </button>
       {/* the round blue table, drawn over Coco's lower half */}
       <svg viewBox="0 0 280 110" className="pointer-events-none absolute bottom-0 left-0 w-full">
@@ -53,13 +62,89 @@ function TableScene({ onPet }: { onPet: (x: number, y: number) => void }) {
   );
 }
 
+type Period = "morning" | "day" | "evening" | "night";
+const periodOf = (h: number): Period => (h >= 5 && h < 11 ? "morning" : h < 17 ? "day" : h < 20 ? "evening" : "night");
+const GREETING: Record<Period, string> = {
+  morning: "Good morning, sleepyhead ☀️",
+  day: "Sunny afternoon · nap o'clock",
+  evening: "Golden hour · snack time?",
+  night: "Night night · lamp's on 🌙",
+};
+const MOOD_POSE: Record<CocoMood, CocoPose> = { sleepy: "sleep", hungry: "eat", playful: "play", cuddly: "purr", happy: "sit", grumpy: "sit" };
+
+/** Soft light behind the hero that follows the real time of day. */
+function TimeGlow({ period }: { period: Period }) {
+  const bg = {
+    morning: "radial-gradient(60% 55% at 50% 30%, rgba(255,214,150,.55), transparent 70%)",
+    day: "radial-gradient(60% 55% at 50% 30%, rgba(255,240,180,.35), transparent 70%)",
+    evening: "radial-gradient(70% 60% at 50% 35%, rgba(255,150,120,.45), rgba(200,120,180,.18) 55%, transparent 75%)",
+    night: "radial-gradient(70% 60% at 50% 35%, rgba(120,150,230,.35), transparent 72%)",
+  }[period];
+  return (
+    <div aria-hidden className="pointer-events-none absolute inset-x-[-1rem] -top-2 h-[300px]" style={{ background: bg }}>
+      {period === "night" && (
+        <>
+          {[[12, 30], [80, 20], [70, 60], [22, 70], [90, 48], [40, 12]].map(([x, y], i) => (
+            <motion.span key={i} className="absolute text-[10px] text-sun" style={{ left: `${x}%`, top: `${y}px` }}
+              animate={{ opacity: [0.2, 1, 0.2] }} transition={{ repeat: Infinity, duration: 2 + i * 0.4 }}>✦</motion.span>
+          ))}
+          {/* little floor lamp beside the table */}
+          <svg viewBox="0 0 40 120" className="absolute bottom-6 right-[8%] h-28 w-10">
+            <defs><radialGradient id="lampglow"><stop offset="0" stopColor="rgba(255,226,140,.9)" /><stop offset="1" stopColor="rgba(255,226,140,0)" /></radialGradient></defs>
+            <circle cx="20" cy="26" r="20" fill="url(#lampglow)" />
+            <path d="M8 30 L14 12 H26 L32 30 Z" fill="#FFE29A" stroke="#2B3A55" strokeWidth="2.5" strokeLinejoin="round" />
+            <path d="M20 30 V112 M10 114 H30" stroke="#2B3A55" strokeWidth="3" strokeLinecap="round" />
+          </svg>
+        </>
+      )}
+      {period === "morning" && <span className="absolute right-[10%] top-3 text-2xl">☀️</span>}
+      {period === "evening" && <span className="absolute right-[10%] top-6 text-2xl">🌇</span>}
+    </div>
+  );
+}
+
+/** Laptop-only summary card that fills the left column: Coco's day at a glance. */
+function CocosDay({ checkedIn }: { checkedIn: string | null }) {
+  const [lastFed] = useLocal<number | undefined>("lastFedAt", undefined);
+  const [game] = useLocal<{ chonk: number; level: number } | null>("game", null);
+  const [letters] = useLocal<unknown[]>("letters", []);
+  const b = birthdayInfo();
+  const fed = lastFed ? Math.round((Date.now() - lastFed) / 3_600_000) : null;
+  const rows: [string, string][] = [
+    ["🐟", fed === null ? "Hasn't been fed yet today. Feed him in his world!" : fed < 1 ? "Just ate. Very proud of himself." : `Last snack ${fed}h ago. He's hinting.`],
+    ["💬", checkedIn ? (checkedIn === "yes" ? "You checked in today. Good hooman." : "Checked in. Go eat something, please?") : "Today's check-in is waiting for you →"],
+    ["🧶", game ? `Level ${game.level} · chonk ${game.chonk}/100` : "Hasn't played yet today"],
+    ["✉️", letters.length ? `${letters.length} letter${letters.length > 1 ? "s" : ""} in his mailbox` : "His mailbox is empty"],
+    ["🎂", b.isToday ? "It's his birthday today!" : `Birthday in ${b.daysLeft} days (16 Nov)`],
+  ];
+  return (
+    <motion.div variants={item} className="sticker relative mt-4 hidden p-4 lg:block">
+      <p className="smallcaps">Coco's day</p>
+      <p className="font-hand text-2xl leading-tight text-cherry">Today with Coco</p>
+      <ul className="mt-2 space-y-2">
+        {rows.map(([icon, text]) => (
+          <li key={icon} className="flex items-start gap-3 rounded-xl bg-baby/30 px-3 py-2 text-sm"><span className="text-lg leading-none">{icon}</span><span>{text}</span></li>
+        ))}
+      </ul>
+    </motion.div>
+  );
+}
+
 export function Home({ onNav }: { onNav: (s: Screen) => void }) {
+  const [period, setPeriod] = useState(() => periodOf(new Date().getHours()));
+  const [waving, setWaving] = useState(true);
+  useEffect(() => {
+    const t = setTimeout(() => setWaving(false), 2200);
+    const id = setInterval(() => setPeriod(periodOf(new Date().getHours())), 60_000);
+    return () => { clearTimeout(t); clearInterval(id); };
+  }, []);
   const [bursts, setBursts] = useState<Burst[]>([]);
   const [lastFed] = useLocal<number | undefined>("lastFedAt", undefined);
   const today = new Date().toDateString();
   const [checkin, setCheckin] = useLocal<{ day: string; answer: "yes" | "no" } | null>("checkin", null);
   const question = dailyPick(CHECKIN_QUESTIONS, new Date(), 3);
-  const mood = MOOD_INFO[currentMood(new Date(), lastFed)];
+  const moodKey = currentMood(new Date(), lastFed);
+  const mood = MOOD_INFO[moodKey];
   const bday = birthdayInfo();
   const ribbon = bday.isToday ? `It's my ${ordinal(bday.turning)} birthday!! Cake please. 🎂` : dailyPick(DAILY_MESSAGES);
   const answered = checkin?.day === today ? checkin.answer : null;
@@ -94,10 +179,11 @@ export function Home({ onNav }: { onNav: (s: Screen) => void }) {
       <div className="lg:mt-6 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:items-start lg:gap-10">
       <div className="lg:sticky lg:top-6">
       <motion.div variants={item} className="relative mt-3 text-center">
-        <p className="font-hand text-sm tracking-wide text-navy/70">Fresh · Fluffy · Chubby</p>
+        <TimeGlow period={period} />
+        <p className="relative font-hand text-base tracking-wide text-navy/80">{GREETING[period]}</p>
         <Hearts bursts={bursts} />
-        <TableScene onPet={pet} />
-        <h1 className="mt-1 font-hand text-[44px] leading-[0.85] text-babydeep" style={{ WebkitTextStroke: "1px #2B3A55" }}>
+        <TableScene onPet={(x, y) => { setWaving(false); pet(x, y); }} pose={waving ? "play" : MOOD_POSE[moodKey]} waving={waving} />
+        <h1 className="mt-1 font-hand text-[44px] leading-[0.85] text-babydeep" style={{ WebkitTextStroke: "1px rgb(var(--c-navy))" }}>
           coco's <span className="text-cherry">corner</span>
         </h1>
         <p className="smallcaps mt-1">Coco's always around you</p>
@@ -105,13 +191,14 @@ export function Home({ onNav }: { onNav: (s: Screen) => void }) {
 
       {/* Mood widget */}
       <motion.div variants={item} className="sticker relative mt-4 flex items-center gap-3 px-3 py-2">
-        <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-baby/60"><Coco pose={mood.label === "Sleepy" ? "sleep" : "sit"} size={50} bob={false} /></div>
+        <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-baby/60"><Coco pose={MOOD_POSE[moodKey]} size={50} bob={false} /></div>
         <div className="flex-1">
           <p className="smallcaps">Coco's mood right now</p>
           <p className="font-hand text-2xl leading-none">{mood.emoji} {mood.label}</p>
           <p className="text-xs text-navy/70">{mood.line}</p>
         </div>
       </motion.div>
+      <CocosDay checkedIn={answered} />
 
       </div>
       <div>

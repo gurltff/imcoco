@@ -5,6 +5,7 @@ import { Coco } from "./components/Coco";
 import { SettingsSheet } from "./components/SettingsSheet";
 import { TabBar } from "./components/TabBar";
 import { DoodleScatter } from "./components/Doodles";
+import { PawWipe } from "./components/PawWipe";
 import { coco } from "./lib/audio";
 import type { Screen } from "./lib/nav";
 import { useSettings } from "./lib/store";
@@ -45,12 +46,20 @@ export default function App() {
   const scroller = useRef<HTMLDivElement>(null);
   const game = screen === "world" || screen === "play";
 
+  const [wipe, setWipe] = useState(0);
   const nav = (s: Screen) => {
     if (s === screen) return;
+    setWipe((w) => w + 1);
     setDir(ORDER.indexOf(s) > ORDER.indexOf(screen) ? 1 : -1);
     setScreen(s);
   };
   useEffect(() => { scroller.current?.scrollTo({ top: 0 }); }, [screen]);
+
+  // Night theme: on by choice, or automatically from 8pm to 6am (not inside the game screens)
+  const [hour, setHour] = useState(() => new Date().getHours());
+  useEffect(() => { const id = setInterval(() => setHour(new Date().getHours()), 60_000); return () => clearInterval(id); }, []);
+  const night = !game && (settings.theme === "night" || (settings.theme === "auto" && (hour >= 20 || hour < 6)));
+  useEffect(() => { document.documentElement.classList.toggle("theme-night", night); }, [night]);
 
   const wake = async () => {
     sessionStorage.setItem("coco:awake", "1");
@@ -74,11 +83,11 @@ export default function App() {
             <AnimatePresence mode="popLayout" initial={false} custom={dir}>
               <motion.div key={screen} custom={dir} className={game || screen === "chat" ? "h-full" : "min-h-full"}
                 variants={{
-                  enter: (d: number) => ({ x: d * 60, opacity: 0, filter: "blur(2px)" }),
-                  center: { x: 0, opacity: 1, filter: "blur(0px)" },
-                  exit: (d: number) => ({ x: d * -60, opacity: 0, filter: "blur(2px)" }),
+                  enter: (d: number) => ({ x: d * 18, y: 10, opacity: 0, scale: 0.985 }),
+                  center: { x: 0, y: 0, opacity: 1, scale: 1 },
+                  exit: (d: number) => ({ x: d * -18, opacity: 0, scale: 0.99 }),
                 }}
-                initial="enter" animate="center" exit="exit" transition={{ type: "spring", stiffness: 300, damping: 32 }}>
+                initial="enter" animate="center" exit="exit" transition={{ type: "spring", stiffness: 210, damping: 30, mass: 0.9 }}>
                 {screen === "home" && <Home onNav={nav} />}
                 {screen === "comfort" && <Comfort />}
                 {screen === "chat" && <Chat openSettings={() => setSettingsOpen(true)} />}
@@ -97,6 +106,7 @@ export default function App() {
             )}
           </AnimatePresence>
 
+          <AnimatePresence>{wipe > 0 && !settings.reducedMotion && <PawWipe key={wipe} dir={dir} />}</AnimatePresence>
           <Captions />
           <SettingsSheet open={settingsOpen} onClose={() => setSettingsOpen(false)} />
           <AnimatePresence>{!awake && <Splash onWake={wake} />}</AnimatePresence>

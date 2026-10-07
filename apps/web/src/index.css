@@ -2,12 +2,32 @@
 @tailwind components;
 @tailwind utilities;
 
-:root { color-scheme: light; }
+:root {
+  color-scheme: light;
+  --c-cream: 251 243 220; --c-creamdeep: 243 230 194; --c-baby: 169 200 227; --c-babydeep: 143 180 214;
+  --c-cherry: 200 50 58; --c-navy: 43 58 85; --c-card: 255 255 255; --c-page: 239 227 191;
+}
+/* Soft navy night theme */
+.theme-night {
+  color-scheme: dark;
+  --c-cream: 34 44 70; --c-creamdeep: 28 37 60; --c-baby: 58 82 122; --c-babydeep: 120 160 205;
+  --c-cherry: 240 112 118; --c-navy: 228 233 245; --c-card: 40 52 82;
+}
+.theme-night .bg-white, .theme-night .bg-white\/70, .theme-night .bg-white\/75 { background-color: rgb(var(--c-card) / .9); }
+.theme-night .paper { background-color: #1B2338; background-image: radial-gradient(rgba(255,255,255,.05) 1px, transparent 1px); }
+.theme-night .gingham { background-color: #24324f; background-image: repeating-linear-gradient(0deg, rgba(90,120,170,.5) 0 8px, transparent 8px 16px), repeating-linear-gradient(90deg, rgba(90,120,170,.5) 0 8px, transparent 8px 16px); }
+.theme-night .gingham-red { background-color: #3a2434; background-image: repeating-linear-gradient(0deg, rgba(240,112,118,.18) 0 7px, transparent 7px 14px), repeating-linear-gradient(90deg, rgba(240,112,118,.18) 0 7px, transparent 7px 14px); }
+.theme-night .shadow-sticker { box-shadow: 0 3px 0 0 rgba(0,0,0,.35), 0 8px 18px -8px rgba(0,0,0,.5); }
+/* hand-drawn outlines (navy) turn soft white on the dark background */
+.theme-night svg [stroke="#2B3A55"] { stroke: #DCE3F2; }
+.theme-night svg [fill="#2B3A55"] { fill: #DCE3F2; }
+.theme-night ::placeholder { color: rgb(228 233 245 / .45); }
 html, body, #root { height: 100%; }
 body {
   margin: 0;
-  background: #efe3bf;
-  color: #2B3A55;
+  background: rgb(var(--c-page));
+  color: rgb(var(--c-navy));
+  transition: background-color .6s;
   font-family: "Nunito", system-ui, sans-serif;
   -webkit-tap-highlight-color: transparent;
 }
@@ -70,3 +90,13 @@ a, button, [role="button"], [role="tab"], [role="switch"], label, summary, selec
 textarea, input[type="text"], input:not([type]), input[type="url"] { cursor: url("./game/sprites/cursor-text.png") 3 6, text; }
 button:disabled, [aria-disabled="true"] { cursor: url("./game/sprites/cursor-no.png") 4 4, not-allowed; }
 .cursor-wait, .cursor-wait * { cursor: url("./game/sprites/cursor-wait.png") 4 4, wait !important; }
+
+/* Game HUD: a soft cream strip with a pixel dotted texture and a chunky pixel edge */
+.hud-strip {
+  background-color: rgba(255, 246, 220, .92);
+  background-image: radial-gradient(rgba(0,0,0,.07) 1px, transparent 1.2px);
+  background-size: 6px 6px;
+  border-bottom: 3px solid #111;
+  box-shadow: 0 3px 0 rgba(0,0,0,.12);
+  border-radius: 0 0 14px 14px;
+}

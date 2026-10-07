@@ -38,6 +38,8 @@ export interface Settings {
   captions: boolean;
   reducedMotion: boolean;
   comfortDetection: boolean;
+  /** "auto" switches to the soft navy theme from 8pm to 6am */
+  theme: "auto" | "day" | "night";
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -46,6 +48,10 @@ export const DEFAULT_SETTINGS: Settings = {
   captions: true,
   reducedMotion: false,
   comfortDetection: false,
+  theme: "auto",
 };
 
-export const useSettings = () => useLocal<Settings>("settings", DEFAULT_SETTINGS);
+export function useSettings() {
+  const [s, set] = useLocal<Settings>("settings", DEFAULT_SETTINGS);
+  return [{ ...DEFAULT_SETTINGS, ...s }, set] as const;
+}

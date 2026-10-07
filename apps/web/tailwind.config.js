@@ -4,12 +4,13 @@ export default {
   theme: {
     extend: {
       colors: {
-        cream: "#FBF3DC",
-        creamdeep: "#F3E6C2",
-        baby: "#A9C8E3",
-        babydeep: "#8FB4D6",
-        cherry: "#C8323A",
-        navy: "#2B3A55",
+        // colours are CSS variables so the soft navy night theme can swap them
+        cream: "rgb(var(--c-cream) / <alpha-value>)",
+        creamdeep: "rgb(var(--c-creamdeep) / <alpha-value>)",
+        baby: "rgb(var(--c-baby) / <alpha-value>)",
+        babydeep: "rgb(var(--c-babydeep) / <alpha-value>)",
+        cherry: "rgb(var(--c-cherry) / <alpha-value>)",
+        navy: "rgb(var(--c-navy) / <alpha-value>)",
         leaf: "#5EE07A",
         sun: "#FFE95C",
       },

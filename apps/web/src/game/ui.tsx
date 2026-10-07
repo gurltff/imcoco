@@ -38,12 +38,17 @@ export function PixelCoco({ pose = "idle", scale = 2, flip = false, className = 
   );
 }
 
-export const FishIcon = ({ s = 18 }: { s?: number }) => (
-  <svg viewBox="0 0 40 24" width={s} height={s * 0.6} aria-hidden><path d="M4 12 Q14 1 28 12 Q14 23 4 12Z" fill="#FFE95C" stroke="#111" strokeWidth="2.4" strokeLinejoin="round" /><path d="M28 12 l8 -7 v14z" fill="#FFE95C" stroke="#111" strokeWidth="2.4" strokeLinejoin="round" /><circle cx="11" cy="11" r="1.8" fill="#111" /></svg>
+import fishPx from "./sprites/icon-fish.png";
+import yarnPx from "./sprites/icon-yarn.png";
+import starPx from "./sprites/icon-star.png";
+
+/** Little pixel icons for the game HUD and shop prices. */
+const PxIcon = ({ src, w, h, s = 2 }: { src: string; w: number; h: number; s?: number }) => (
+  <img src={src} width={w * s} height={h * s} alt="" aria-hidden style={{ imageRendering: "pixelated" }} />
 );
-export const YarnIcon = ({ s = 18 }: { s?: number }) => (
-  <svg viewBox="0 0 32 32" width={s} height={s} aria-hidden><circle cx="15" cy="15" r="11" fill="#fff" stroke="#111" strokeWidth="2.4" /><path d="M7 10 q8 6 16 -2 M5 16 q10 6 20 -4 M9 24 q8 -4 14 -12" fill="none" stroke="#111" strokeWidth="1.6" /><path d="M25 22 q6 4 2 8" fill="none" stroke="#111" strokeWidth="2.2" strokeLinecap="round" /></svg>
-);
+export const FishIcon = ({ s = 18 }: { s?: number }) => <PxIcon src={fishPx} w={17} h={8} s={Math.max(1, Math.round(s / 10))} />;
+export const YarnIcon = ({ s = 18 }: { s?: number }) => <PxIcon src={yarnPx} w={12} h={10} s={Math.max(1, Math.round(s / 9))} />;
+export const StarIcon = () => <PxIcon src={starPx} w={7} h={7} s={2} />;
 
 export function RoundBtn({ label, onClick, children, big }: { label: string; onClick: () => void; children: ReactNode; big?: boolean }) {
   return (
@@ -56,11 +61,12 @@ export function RoundBtn({ label, onClick, children, big }: { label: string; onC
 export function Hud({ g, onBack, children }: { g: GameState; onBack: () => void; children?: ReactNode }) {
   const need = xpToNext(g.level);
   return (
-    <div className="pointer-events-none absolute inset-x-0 top-0 z-10 px-3 pt-[max(env(safe-area-inset-top),10px)] font-game">
-      <div className="pointer-events-auto flex items-center gap-2">
+    <div className="pointer-events-none absolute inset-x-0 top-0 z-10 font-game">
+      <div className="hud-strip pointer-events-auto px-3 pb-2 pt-[max(env(safe-area-inset-top),10px)]">
+      <div className="flex items-center gap-2">
         <button aria-label="Back to Coco's Corner" onClick={onBack} className="game-btn h-10 w-10 text-xl leading-none">‹</button>
         <div className="flex flex-1 items-center lg:max-w-md">
-          <span className="z-10 grid h-9 w-9 place-items-center rounded-full border-[2.5px] border-black bg-white text-xl font-bold" style={{ boxShadow: "1px 2px 0 #000" }}>{g.level}</span>
+          <span className="relative z-10 grid h-9 w-9 place-items-center rounded-full border-[2.5px] border-black bg-sun text-xl font-bold" style={{ boxShadow: "1px 2px 0 #000" }}><span className="absolute -top-2 -left-1"><StarIcon /></span>{g.level}</span>
           <div className="relative -ml-2 h-6 flex-1 overflow-hidden rounded-r-md border-[2.5px] border-black bg-white" aria-label={`XP ${g.xp} of ${need}`}>
             <motion.div className="h-full bg-sun" animate={{ width: `${(g.xp / need) * 100}%` }} />
             <span className="absolute inset-0 grid place-items-center text-sm font-bold">{g.xp}/{need}</span>
@@ -70,6 +76,7 @@ export function Hud({ g, onBack, children }: { g: GameState; onBack: () => void;
         <span className="flex h-8 items-center gap-1 rounded-full border-[2.5px] border-black bg-white px-2 text-lg font-bold"><YarnIcon />{g.yarn}</span>
       </div>
       {children}
+      </div>
     </div>
   );
 }
