@@ -53,7 +53,8 @@ export default function App() {
     setDir(ORDER.indexOf(s) > ORDER.indexOf(screen) ? 1 : -1);
     setScreen(s);
   };
-  useEffect(() => { scroller.current?.scrollTo({ top: 0 }); }, [screen]);
+  // reset scroll only once the old page has faded out (no jump mid-transition)
+  const resetScroll = () => scroller.current?.scrollTo({ top: 0 });
 
   // Dark mode is a manual choice (light by default); not applied inside the game screens
   const night = !game && settings.theme === "dark";
@@ -78,14 +79,15 @@ export default function App() {
           </header>}
 
           <div ref={scroller} className={`no-scrollbar relative flex-1 overflow-x-hidden ${game ? "overflow-hidden bg-white" : "overflow-y-auto"}`}>
-            <AnimatePresence mode="popLayout" initial={false} custom={dir}>
+            <AnimatePresence mode="wait" initial={false} custom={dir} onExitComplete={resetScroll}>
               <motion.div key={screen} custom={dir} className={game || screen === "chat" ? "h-full" : "min-h-full"}
+                style={{ willChange: "opacity, transform" }}
                 variants={{
-                  enter: (d: number) => ({ x: d * 18, y: 10, opacity: 0, scale: 0.985 }),
-                  center: { x: 0, y: 0, opacity: 1, scale: 1 },
-                  exit: (d: number) => ({ x: d * -18, opacity: 0, scale: 0.99 }),
+                  enter: (d: number) => ({ x: d * 10, y: 8, opacity: 0 }),
+                  center: { x: 0, y: 0, opacity: 1, transition: { duration: 0.34, ease: [0.22, 1, 0.36, 1] } },
+                  exit: { opacity: 0, y: -4, transition: { duration: 0.14, ease: "easeIn" } },
                 }}
-                initial="enter" animate="center" exit="exit" transition={{ type: "spring", stiffness: 210, damping: 30, mass: 0.9 }}>
+                initial="enter" animate="center" exit="exit">
                 {screen === "home" && <Home onNav={nav} />}
                 {screen === "comfort" && <Comfort />}
                 {screen === "chat" && <Chat openSettings={() => setSettingsOpen(true)} />}

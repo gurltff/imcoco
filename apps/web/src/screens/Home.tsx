@@ -10,8 +10,8 @@ import { useLocal, writeLocal } from "../lib/store";
 import type { Screen } from "../lib/nav";
 
 const item = {
-  hidden: { opacity: 0, y: 16, scale: 0.97 },
-  show: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", stiffness: 260, damping: 24 } },
+  hidden: { opacity: 0, y: 10 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.22, 1, 0.36, 1] } },
 };
 
 function Card({ title, sub, onClick, children, tilt = 0 }: { title: string; sub: string; onClick: () => void; children: ReactNode; tilt?: number }) {
@@ -157,7 +157,7 @@ export function Home({ onNav }: { onNav: (s: Screen) => void }) {
   };
 
   return (
-    <motion.div initial="hidden" animate="show" variants={{ show: { transition: { staggerChildren: 0.06 } } }}
+    <motion.div initial="hidden" animate="show" variants={{ show: { transition: { staggerChildren: 0.035, delayChildren: 0.05 } } }}
       className="relative px-4 pb-6 lg:mx-auto lg:max-w-6xl lg:px-10 lg:pb-10">
       <DoodleScatter items={[
         { name: "croissant", x: "6%", y: "140px", size: 30, r: -12 },
