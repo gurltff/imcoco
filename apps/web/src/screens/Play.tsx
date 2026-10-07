@@ -8,8 +8,13 @@ import meadow from "../game/sprites/bg-meadow.png";
 import garden from "../game/sprites/bg-garden.png";
 import stage from "../game/sprites/bg-stage.png";
 import boxSheet from "../game/sprites/box.png";
+import meadowWide from "../game/sprites/bg-meadow-wide.png";
+import gardenWide from "../game/sprites/bg-garden-wide.png";
+import stageWide from "../game/sprites/bg-stage-wide.png";
 
+// tall scenes for phones, wide scenes for laptops: picked by the play area's shape
 const BG = { yarn: meadow, laser: garden, box: stage };
+const BG_WIDE = { yarn: meadowWide, laser: gardenWide, box: stageWide };
 /** Coco gets visibly wider and a bit taller as his chonk level rises. */
 export const chonkScale = () => {
   const c = (readLocal<GameState>("game", DEFAULT_GAME).chonk ?? 10) / 100;
@@ -184,6 +189,14 @@ export function Play({ onNav }: { onNav: (s: Screen) => void }) {
   const [g] = useGame();
   const [tab, setTab] = useState<"yarn" | "laser" | "box">("yarn");
   const [toast, setToast] = useState("");
+  const area = useRef<HTMLDivElement>(null);
+  const [wide, setWide] = useState(false);
+  useEffect(() => {
+    const el = area.current; if (!el) return;
+    const ro = new ResizeObserver(() => setWide(el.clientWidth > el.clientHeight * 1.1));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
   const flash = (t: string) => { setToast(t); setTimeout(() => setToast((x) => (x === t ? "" : x)), 1500); };
   return (
     <div className="relative flex h-full flex-col bg-white font-game text-black" style={{ cursor: CAT_CURSOR }}>
@@ -194,7 +207,7 @@ export function Play({ onNav }: { onNav: (s: Screen) => void }) {
             className={`min-h-[44px] flex-1 rounded-md border-[2.5px] border-black text-xl ${tab === id ? "bg-sun font-bold" : "bg-white"}`} style={{ boxShadow: "1px 2px 0 #000" }}>{l}</button>
         ))}
       </div>
-      <div className="pixel-sheet relative m-3 flex-1 overflow-hidden rounded-lg border-[2.5px] border-black lg:mx-auto lg:mb-6 lg:w-full lg:max-w-3xl" style={{ backgroundImage: `url(${BG[tab]})`, backgroundSize: "cover", backgroundPosition: "center bottom" }}>
+      <div ref={area} className="pixel-sheet relative m-3 flex-1 overflow-hidden rounded-lg border-[2.5px] border-black lg:mx-auto lg:mb-6 lg:w-full lg:max-w-4xl" style={{ backgroundImage: `url(${(wide ? BG_WIDE : BG)[tab]})`, backgroundSize: "100% 100%" }}>
         {tab === "yarn" && <Yarn flash={flash} />}
         {tab === "laser" && <Laser flash={flash} />}
         {tab === "box" && <BoxGame flash={flash} />}

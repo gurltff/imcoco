@@ -62,7 +62,7 @@ function face(cx: number, cy: number, mode: Parameters<typeof eyes>[3], o: strin
     (mouthOpen
       ? `<path d="M${cx - 8} ${cy + 20} Q${cx} ${cy + 33} ${cx + 8} ${cy + 20} Z" fill="#E0566B" stroke="${whisk}" stroke-width="1.5"/><path d="M${cx - 4} ${cy + 26} q4 3 8 0" fill="#F49AAA"/>`
       : `<path d="M${cx - 9} ${cy + 19} Q${cx - 4.5} ${cy + 25} ${cx} ${cy + 18.5} Q${cx + 4.5} ${cy + 25} ${cx + 9} ${cy + 19}" stroke="${whisk}" stroke-width="2.2" fill="none" stroke-linecap="round"/>`) +
-    `<path d="M${cx - 30} ${cy + 15} Q${cx - 44} ${cy + 9} ${cx - 56} ${cy + 11}M${cx - 30} ${cy + 20} Q${cx - 44} ${cy + 20} ${cx - 54} ${cy + 25}M${cx + 30} ${cy + 15} Q${cx + 44} ${cy + 9} ${cx + 56} ${cy + 11}M${cx + 30} ${cy + 20} Q${cx + 44} ${cy + 20} ${cx + 54} ${cy + 25}" stroke="${whisk}" stroke-width="1.6" fill="none" stroke-linecap="round"/>`
+    `<path d="M${cx - 30} ${cy + 15} Q${cx - 44} ${cy + 9} ${cx - 56} ${cy + 11}M${cx - 30} ${cy + 20} Q${cx - 44} ${cy + 20} ${cx - 54} ${cy + 25}M${cx + 30} ${cy + 15} Q${cx + 44} ${cy + 9} ${cx + 56} ${cy + 11}M${cx + 30} ${cy + 20} Q${cx + 44} ${cy + 20} ${cx + 54} ${cy + 25}" stroke="${whisk}" stroke-width="1.4" fill="none" stroke-linecap="round" opacity=".85"/>`
   );
 }
 
@@ -124,7 +124,7 @@ function sitting(o: string, acc: boolean, mode: Parameters<typeof eyes>[3], opts
   const puff = !!opts.puff;
   const tail = puff
     ? `<path d="M150 170 Q192 150 178 96" stroke="${o}" stroke-width="30" fill="none" stroke-linecap="round"/><path d="M150 170 Q192 150 178 96" stroke="${P.fur}" stroke-width="23" fill="none" stroke-linecap="round" stroke-dasharray="3 5"/><path d="M150 170 Q192 150 178 96" stroke="${P.fur}" stroke-width="20" fill="none" stroke-linecap="round"/>`
-    : `<path d="M148 172 Q190 160 182 118" stroke="${o}" stroke-width="18" fill="none" stroke-linecap="round"/><path d="M148 172 Q190 160 182 118" stroke="${P.fur}" stroke-width="11" fill="none" stroke-linecap="round"/>`;
+    : `<path d="M148 172 Q192 164 184 122 Q182 110 172 114" stroke="${o}" stroke-width="17" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M148 172 Q192 164 184 122 Q182 110 172 114" stroke="${P.fur}" stroke-width="11" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
   const body = puff
     ? `<path d="${spikyPath(100, 146, 66, 50)}" fill="${P.fur}" stroke="${o}" stroke-width="3.5" stroke-linejoin="round"/>`
     : `<ellipse cx="100" cy="146" rx="74" ry="53" fill="url(#coco-fur)" stroke="${o}" stroke-width="3.5"/>` +
@@ -135,11 +135,13 @@ function sitting(o: string, acc: boolean, mode: Parameters<typeof eyes>[3], opts
     tail + body +
     `<ellipse cx="74" cy="192" rx="17" ry="9" fill="${P.fur}" stroke="${o}" stroke-width="3"/>` +
     `<ellipse cx="126" cy="192" rx="17" ry="9" fill="${P.fur}" stroke="${o}" stroke-width="3"/>` +
-    `<path d="M68 192 v5 M76 192 v5 M120 192 v5 M128 192 v5" stroke="#555" stroke-width="1.6" stroke-linecap="round"/>` +
+    `<path d="M69 191 q1 3 0 6 M77 191 q1 3 0 6 M121 191 q1 3 0 6 M129 191 q1 3 0 6" stroke="${P.furShine}" stroke-width="2" fill="none" stroke-linecap="round"/>` +
     ears(100, 38, o, puff) +
     (puff ? `<path d="${spikyPath(100, 92, 56, 46, 20)}" fill="${P.fur}" stroke="${o}" stroke-width="3.5" stroke-linejoin="round"/>`
           : cheeks(100, 92, 60, o) + `<ellipse cx="100" cy="92" rx="60" ry="47" fill="url(#coco-fur)" stroke="${o}" stroke-width="3.5"/>`) +
+    `<path d="M66 64 Q78 52 96 50" stroke="#3A3A48" stroke-width="5" fill="none" stroke-linecap="round" opacity=".8"/>` +
     face(100, 90, mode, o, opts.mouth) +
+    (acc ? `<ellipse cx="100" cy="142" rx="40" ry="7" fill="#000" opacity=".22"/>` : "") +
     (acc ? scarf(100, 126, o) + hat(100, 34, o) : "")
   );
 }
