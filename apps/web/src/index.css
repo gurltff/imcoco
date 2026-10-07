@@ -62,7 +62,7 @@ input[type=range] { accent-color: #C8323A; }
 
 /* Pixel-art sprite sheets */
 .pixel-sheet { image-rendering: pixelated; background-repeat: no-repeat; background-position: 0 0; }
-@keyframes pxsheet { to { background-position: var(--end) 0; } }
+@keyframes pxsheet { from { background-position: var(--start, 0px) 0; } to { background-position: var(--end) 0; } }
 
 /* Little pixel cat cursors (my own pixel art, inspired by cat cursor packs) */
 html, body { cursor: url("./game/sprites/cursor-default.png") 0 0, auto; }
