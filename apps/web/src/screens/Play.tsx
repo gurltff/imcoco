@@ -1,25 +1,27 @@
 import { motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-import { cocoSvg } from "@coco/core";
-import { Coco } from "../components/Coco";
 import { updateGame, useGame } from "../game/state";
-import { Hud, Toast, YellowBtn } from "../game/ui";
+import { CAT_CURSOR, Hud, PixelCoco, SHEETS, Toast, YellowBtn } from "../game/ui";
 import { coco } from "../lib/audio";
 import type { Screen } from "../lib/nav";
 
 const earn = (p: { fish?: number; yarn?: number; xp?: number }) =>
   updateGame((s) => ({ fish: s.fish + (p.fish ?? 0), yarn: s.yarn + (p.yarn ?? 0), xp: s.xp + (p.xp ?? 0) }));
 
-/** Renders Coco straight into a DOM node for 60fps chasing without React re-renders. */
+/** Moves the pixel Coco sprite directly in the DOM for 60fps chasing without React re-renders. */
 function useCocoSprite(size: number) {
   const el = useRef<HTMLDivElement>(null);
-  const last = useRef("");
-  const set = (x: number, y: number, pose: "walk" | "sit" | "play" | "puff", dir: number, step: number) => {
-    const svg = cocoSvg({ pose, step, accessories: false, outline: "#111" });
-    if (el.current) {
-      if (svg !== last.current) { el.current.innerHTML = svg; last.current = svg; }
-      el.current.style.transform = `translate(${x - size / 2}px, ${y - size * 0.95}px) scaleX(${pose === "walk" && dir < 0 ? -1 : 1})`;
-    }
+  const set = (x: number, y: number, pose: "walk" | "sit" | "play" | "puff", dir: number, _step: number) => {
+    if (!el.current) return;
+    const sheet = pose === "walk" ? SHEETS.run : SHEETS.idle;
+    const now = performance.now();
+    const f = Math.floor(now / (1000 / (pose === "walk" ? 14 : 8))) % sheet.frames;
+    const hop = pose === "play" ? Math.abs(Math.sin(now / 90)) * 10 : 0;
+    const st = el.current.style;
+    st.backgroundImage = `url(${sheet.url})`;
+    st.backgroundSize = `${sheet.frames * size}px ${size}px`;
+    st.backgroundPosition = `${-f * size}px 0`;
+    st.transform = `translate(${x - size * 0.51}px, ${y - size - hop}px) scaleX(${dir < 0 ? -1 : 1})`;
   };
   return { el, set };
 }
@@ -27,7 +29,7 @@ function useCocoSprite(size: number) {
 function Laser({ flash }: { flash: (t: string) => void }) {
   const area = useRef<HTMLDivElement>(null);
   const dot = useRef<HTMLDivElement>(null);
-  const S = 90;
+  const S = 144;
   const sprite = useCocoSprite(S);
   const st = useRef({ dx: 200, dy: 150, cx: 60, cy: 300, auto: true, cool: 0, step: 0, t: 0, dir: 1, catches: 0 });
   useEffect(() => {
@@ -65,7 +67,7 @@ function Laser({ flash }: { flash: (t: string) => void }) {
     <div ref={area} onPointerMove={move} onPointerDown={move} onPointerLeave={() => (st.current.auto = true)} className="relative h-full touch-none overflow-hidden">
       <p className="absolute inset-x-0 top-2 text-center text-lg text-black/50">Move your finger or mouse. Coco hunts the dot.</p>
       <div ref={dot} className="absolute left-0 top-0 h-[18px] w-[18px] rounded-full border-2 border-black bg-sun" style={{ boxShadow: "0 0 12px 4px rgba(255,233,92,.9)" }} />
-      <div ref={sprite.el} className="pointer-events-none absolute left-0 top-0" style={{ width: S, height: S * 0.95 }} />
+      <div ref={sprite.el} className="pointer-events-none absolute left-0 top-0" style={{ width: S, height: S, imageRendering: "pixelated", backgroundRepeat: "no-repeat" }} />
     </div>
   );
 }
@@ -73,7 +75,7 @@ function Laser({ flash }: { flash: (t: string) => void }) {
 function Yarn({ flash }: { flash: (t: string) => void }) {
   const area = useRef<HTMLDivElement>(null);
   const ball = useRef<HTMLDivElement>(null);
-  const S = 90, R = 22;
+  const S = 144, R = 22;
   const sprite = useCocoSprite(S);
   const st = useRef({ x: 200, y: 100, vx: 60, vy: 0, cx: 60, cool: 0, step: 0, dir: 1, bats: 0 });
   useEffect(() => {
@@ -110,7 +112,7 @@ function Yarn({ flash }: { flash: (t: string) => void }) {
       <button aria-label="Toss the yarn" ref={ball as any} onPointerDown={bat} className="absolute left-0 top-0" style={{ width: R * 2, height: R * 2 }}>
         <svg viewBox="0 0 32 32" className="h-full w-full"><circle cx="16" cy="16" r="14" fill="#FFE95C" stroke="#111" strokeWidth="2" /><path d="M6 10 q10 6 20 -2 M4 17 q12 6 24 -4 M8 26 q10 -4 16 -14" fill="none" stroke="#111" strokeWidth="1.6" /></svg>
       </button>
-      <div ref={sprite.el} className="pointer-events-none absolute left-0 top-0" style={{ width: S, height: S * 0.95 }} />
+      <div ref={sprite.el} className="pointer-events-none absolute left-0 top-0" style={{ width: S, height: S, imageRendering: "pixelated", backgroundRepeat: "no-repeat" }} />
     </div>
   );
 }
@@ -148,10 +150,10 @@ function BoxGame({ flash }: { flash: (t: string) => void }) {
           return (
             <motion.button key={box} onClick={() => pick(box)} aria-label={`Box ${slot + 1}`}
               className="absolute bottom-0 flex w-[30%] flex-col items-center" animate={{ left: `${slot * 35}%` }} transition={{ type: "spring", stiffness: 300, damping: 26 }}>
-              <motion.div animate={{ y: open && box === cat ? -30 : 20, opacity: open && box === cat ? 1 : 0 }} className="h-16">
-                <Coco pose="play" size={72} accessories={false} outline="#111" bob={false} />
+              <motion.div animate={{ y: open && box === cat ? -18 : 40, opacity: open && box === cat ? 1 : 0 }} className="-mb-10 h-20">
+                <PixelCoco scale={2} />
               </motion.div>
-              <svg viewBox="0 0 80 60" className="relative w-full"><path d="M6 18 h68 v38 h-68z" fill="#fff" stroke="#111" strokeWidth="2.5" strokeLinejoin="round" /><path d={open ? "M6 18 l-4 -16 M74 18 l4 -16" : "M6 18 l34 -10 l34 10"} fill="none" stroke="#111" strokeWidth="2.5" strokeLinecap="round" /><path d="M30 34 h20" stroke="#111" strokeWidth="2" /></svg>
+              <svg viewBox="0 0 80 60" className="relative w-full"><path d="M6 18 h68 v38 h-68z" fill="#d4a26a" stroke="#3b2a20" strokeWidth="2.5" strokeLinejoin="round" /><path d={open ? "M6 18 l-4 -16 M74 18 l4 -16" : "M6 18 l34 -10 l34 10"} fill="none" stroke="#3b2a20" strokeWidth="2.5" strokeLinecap="round" /><path d="M30 34 h20" stroke="#8a5a34" strokeWidth="2" /></svg>
             </motion.button>
           );
         })}
@@ -169,7 +171,7 @@ export function Play({ onNav }: { onNav: (s: Screen) => void }) {
   const [toast, setToast] = useState("");
   const flash = (t: string) => { setToast(t); setTimeout(() => setToast((x) => (x === t ? "" : x)), 1500); };
   return (
-    <div className="relative flex h-full flex-col bg-white font-game text-black">
+    <div className="relative flex h-full flex-col bg-white font-game text-black" style={{ cursor: CAT_CURSOR }}>
       <div className="relative h-[60px] shrink-0"><Hud g={g} onBack={() => onNav("world")} /></div>
       <div className="mx-3 mt-1 flex gap-1 lg:mx-auto lg:w-full lg:max-w-3xl" role="tablist">
         {([["yarn", "Yarn"], ["laser", "Laser dot"], ["box", "The box"]] as const).map(([id, l]) => (
@@ -177,7 +179,7 @@ export function Play({ onNav }: { onNav: (s: Screen) => void }) {
             className={`min-h-[44px] flex-1 rounded-md border-[2.5px] border-black text-xl ${tab === id ? "bg-sun font-bold" : "bg-white"}`} style={{ boxShadow: "1px 2px 0 #000" }}>{l}</button>
         ))}
       </div>
-      <div className="relative m-3 flex-1 overflow-hidden rounded-lg border-[2.5px] border-black lg:mx-auto lg:mb-6 lg:w-full lg:max-w-3xl">
+      <div className="relative m-3 flex-1 overflow-hidden rounded-lg border-[2.5px] border-black bg-gradient-to-b from-[#cfe6e1] from-70% to-[#9fd174] to-70% lg:mx-auto lg:mb-6 lg:w-full lg:max-w-3xl">
         {tab === "yarn" && <Yarn flash={flash} />}
         {tab === "laser" && <Laser flash={flash} />}
         {tab === "box" && <BoxGame flash={flash} />}

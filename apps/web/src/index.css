@@ -59,3 +59,7 @@ body {
 input[type=range] { accent-color: #C8323A; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { scrollbar-width: none; }
+
+/* Pixel-art sprite sheets */
+.pixel-sheet { image-rendering: pixelated; background-repeat: no-repeat; background-position: 0 0; }
+@keyframes pxsheet { to { background-position: var(--end) 0; } }

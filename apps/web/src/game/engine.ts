@@ -2,7 +2,22 @@
  * Coco's Home: a light Canvas 2D isometric world in thin black line art.
  * Runs ~30fps, pauses when hidden. Coco + stray cats are drawn from the shared SVG art.
  */
-import { cocoSvg, type CocoPose } from "@coco/core";
+import idleUrl from "./sprites/coco-idle.png";
+import runUrl from "./sprites/coco-run.png";
+import sleepUrl from "./sprites/coco-sleep.png";
+import greyIdle from "./sprites/stray-grey-idle.png";
+import greyRun from "./sprites/stray-grey-run.png";
+import gingerIdle from "./sprites/stray-ginger-idle.png";
+import gingerRun from "./sprites/stray-ginger-run.png";
+
+// Coco's sprites: "Black Cat" by Carysaurus (free asset), eyes recoloured green.
+const SHEETS: Record<string, string> = {
+  idle: idleUrl, run: runUrl, sleep: sleepUrl,
+  "grey-idle": greyIdle, "grey-run": greyRun, "ginger-idle": gingerIdle, "ginger-run": gingerRun,
+};
+/** Size of one world pixel in CSS px (the pixel-art grain). */
+const PX = 2;
+const CREAM = "#f7eed8";
 
 export interface WorldCallbacks {
   onTapCoco(sleeping: boolean): void;
@@ -18,15 +33,18 @@ export interface WorldCallbacks {
 }
 
 type CocoState = "idle" | "walk" | "nap" | "eat" | "chase" | "puff" | "cuddle" | "sleep" | "zoom" | "happy";
-interface Stray { gx: number; gy: number; tx: number; ty: number; fur: string; eye: string; mode: "enter" | "standoff" | "flee" | "leave"; dir: number }
+interface Stray { gx: number; gy: number; tx: number; ty: number; fur: "grey" | "ginger"; mode: "enter" | "standoff" | "flee" | "leave"; dir: number }
 interface Floater { x: number; y: number; text: string; t: number; color: string; size: number }
 
-const INK = "#111";
+const INK = "#3b2a20";
 const YELLOW = "#FFE95C";
 
 
 export class WorldEngine {
-  private ctx: CanvasRenderingContext2D;
+  private ctx: CanvasRenderingContext2D; // low-res pixel layer
+  private screen: CanvasRenderingContext2D;
+  private low = document.createElement("canvas");
+  private sheets: Record<string, HTMLImageElement> = {};
   private W = 390; private H = 600; private dpr = 1;
   private TW = 48; private TH = 24; private ox = 195; private oy = 120;
   private imgs = new Map<string, HTMLImageElement>();
@@ -44,7 +62,9 @@ export class WorldEngine {
   private ro: ResizeObserver;
 
   constructor(private canvas: HTMLCanvasElement, private cb: WorldCallbacks) {
-    this.ctx = canvas.getContext("2d")!;
+    this.screen = canvas.getContext("2d")!;
+    this.ctx = this.low.getContext("2d")!;
+    for (const [k, url] of Object.entries(SHEETS)) { const im = new Image(); im.src = url; this.sheets[k] = im; }
     this.ro = new ResizeObserver(() => this.resize());
     this.ro.observe(canvas);
     this.resize();
@@ -99,6 +119,8 @@ export class WorldEngine {
     this.W = r.width; this.H = r.height;
     this.canvas.width = Math.round(r.width * this.dpr);
     this.canvas.height = Math.round(r.height * this.dpr);
+    this.low.width = Math.ceil(r.width / PX);
+    this.low.height = Math.ceil(r.height / PX);
     this.TW = Math.min(this.W / 7.4, (this.H - 200) / 4.4, 120);
     this.TH = this.TW / 2;
     this.ox = this.W / 2;
@@ -216,9 +238,8 @@ export class WorldEngine {
       if (this.strayT <= 0 && ["idle", "walk", "nap", "happy"].includes(c.state)) {
         this.strayT = 70 + Math.random() * 70;
         const left = Math.random() < 0.5;
-        const furs = [["#9C9CA3", "#F3C546"], ["#E39B4F", "#7AC943"], ["#F2F2F2", "#62B5E5"]];
-        const [fur, eye] = furs[Math.floor(Math.random() * furs.length)];
-        this.strays.push({ gx: left ? -1 : 9, gy: 4 + Math.random() * 3, tx: 0, ty: 0, fur, eye, mode: "enter", dir: left ? 1 : -1 });
+        const fur = Math.random() < 0.5 ? "grey" : "ginger";
+        this.strays.push({ gx: left ? -1 : 9, gy: 4 + Math.random() * 3, tx: 0, ty: 0, fur, mode: "enter", dir: left ? 1 : -1 });
       }
     }
     for (const s of this.strays) {
@@ -301,13 +322,18 @@ export class WorldEngine {
   }
   private napNext = false;
 
-  // ---------- drawing ----------
-  private cocoSize() { return this.TW * 1.25 * (1 + this.cb.getChonk() / 100 * 0.18); }
+  // ---------- drawing (pixel-art pass at 1/PX resolution, then scaled up crisply) ----------
+  private spriteK() { return Math.max(1, Math.round(this.TW / 55)); }
+  /** On-screen size of Coco's body (CSS px), used for hit-testing and bubbles. */
+  private cocoSize() { return 32 * this.spriteK() * PX * (1 + this.cb.getChonk() / 100 * 0.15); }
 
   private draw() {
     const ctx = this.ctx;
-    ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
-    ctx.fillStyle = "#fff";
+    ctx.setTransform(1 / PX, 0, 0, 1 / PX, 0, 0);
+    ctx.imageSmoothingEnabled = false;
+    const sky = ctx.createLinearGradient(0, 0, 0, this.H);
+    sky.addColorStop(0, "#b9d8d2"); sky.addColorStop(1, "#97c0ba");
+    ctx.fillStyle = sky;
     ctx.fillRect(0, 0, this.W, this.H);
     ctx.lineJoin = "round"; ctx.lineCap = "round";
 
@@ -329,41 +355,80 @@ export class WorldEngine {
     list.push({ depth: this.coco.gx + this.coco.gy + 0.01, draw: () => this.drawCoco() });
     for (const s of this.strays) list.push({ depth: s.gx + s.gy, draw: () => this.drawStray(s) });
     list.sort((a, b) => a.depth - b.depth).forEach((d) => d.draw());
-
     this.drawButterfly();
 
     if (this.night) {
-      ctx.fillStyle = "rgba(18,26,56,.42)";
+      ctx.fillStyle = "rgba(20,26,62,.5)";
       ctx.fillRect(0, 0, this.W, this.H);
-      ctx.fillStyle = "#fff"; ctx.strokeStyle = INK; ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.arc(this.W - 50, 95, 16, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-      ctx.fillStyle = "rgba(18,26,56,.9)"; ctx.beginPath(); ctx.arc(this.W - 43, 90, 14, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#fff6c8";
+      ctx.beginPath(); ctx.arc(this.W - 50, 100, 16, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "rgba(20,26,62,1)"; ctx.beginPath(); ctx.arc(this.W - 43, 95, 14, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#fff6c8";
+      for (let i = 0; i < 18; i++) { const sx = (i * 97) % this.W, sy = 70 + ((i * 53) % 120); ctx.fillRect(sx, sy, PX, PX); }
       if (owned.includes("lamp")) {
         const p = this.toScreen(ITEMS.lamp.gx, ITEMS.lamp.gy);
         const g = ctx.createRadialGradient(p.x, p.y - 40, 4, p.x, p.y - 20, this.TW * 2.4);
-        g.addColorStop(0, "rgba(255,233,92,.75)"); g.addColorStop(1, "rgba(255,233,92,0)");
+        g.addColorStop(0, "rgba(255,233,92,.7)"); g.addColorStop(1, "rgba(255,233,92,0)");
         ctx.fillStyle = g; ctx.beginPath(); ctx.arc(p.x, p.y - 20, this.TW * 2.4, 0, Math.PI * 2); ctx.fill();
       }
+      // windows glow at night
+      const w0 = this.toScreen(0.5 + 2.5 * 0.15, 2.6), w1 = this.toScreen(0.5 + 2.5 * 0.4, 2.6);
+      ctx.fillStyle = "rgba(255,220,120,.55)";
+      ctx.beginPath(); ctx.moveTo(w0.x, w0.y - this.TW * 0.56); ctx.lineTo(w1.x, w1.y - this.TW * 0.56); ctx.lineTo(w1.x, w1.y - this.TW); ctx.lineTo(w0.x, w0.y - this.TW); ctx.fill();
     }
 
+    // scale the low-res world up with hard pixel edges
+    const sc = this.screen;
+    sc.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    sc.imageSmoothingEnabled = false;
+    sc.clearRect(0, 0, this.W, this.H);
+    sc.drawImage(this.low, 0, 0, this.low.width * PX, this.low.height * PX);
+    this.drawOverlay();
+  }
+
+  /** Text and bubbles at full resolution so they stay readable. */
+  private drawOverlay() {
+    const ctx = this.screen; const c = this.coco; const p = this.cocoScreen(); const s = this.cocoSize();
+    ctx.lineJoin = "round";
+    const sleeping = c.state === "sleep" || c.state === "nap";
+    if (sleeping) {
+      ctx.font = "700 15px Gaegu, cursive"; ctx.fillStyle = this.night ? "#fff" : INK; ctx.textAlign = "left";
+      ctx.globalAlpha = 0.5 + Math.sin(this.time * 2) * 0.5; ctx.fillText("z z z", p.x + s * 0.3, p.y - s * 0.9); ctx.globalAlpha = 1;
+    }
+    if (this.attention) {
+      const bx = p.x + s * 0.45, by = p.y - s - 12;
+      ctx.fillStyle = YELLOW; ctx.strokeStyle = "#111"; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.roundRect(bx - 18, by - 14, 36, 22, 11); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(bx - 8, by + 8); ctx.lineTo(bx - 14, by + 16); ctx.lineTo(bx - 1, by + 8); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#111"; for (let i = -1; i <= 1; i++) { ctx.beginPath(); ctx.arc(bx + i * 8, by - 3 + (Math.floor(this.time * 3) % 3 === i + 1 ? -2 : 0), 2, 0, Math.PI * 2); ctx.fill(); }
+    }
+    for (const st of this.strays) if (st.mode === "standoff") {
+      const q = this.toScreen(st.gx, st.gy);
+      ctx.font = "700 16px Gaegu, cursive"; ctx.textAlign = "center"; ctx.lineWidth = 4; ctx.strokeStyle = "#fff";
+      ctx.strokeText("hsss", q.x, q.y - s - 4); ctx.fillStyle = INK; ctx.fillText("hsss", q.x, q.y - s - 4);
+    }
     for (const f of this.floaters) {
       ctx.globalAlpha = Math.max(0, 1 - f.t / 1.6);
       ctx.font = `700 ${f.size}px Gaegu, "Patrick Hand", cursive`;
       ctx.textAlign = "center";
       ctx.lineWidth = 4; ctx.strokeStyle = "#fff"; ctx.strokeText(f.text, f.x, f.y);
-      ctx.fillStyle = this.night ? "#fff" : f.color; ctx.fillText(f.text, f.x, f.y);
+      ctx.fillStyle = f.color; ctx.fillText(f.text, f.x, f.y);
       ctx.globalAlpha = 1;
     }
   }
 
-  private poly(pts: { x: number; y: number }[], fill: string | null = "#fff", lw = 1.6) {
+  private poly(pts: { x: number; y: number }[], fill: string | null = CREAM, lw = 2, stroke = INK) {
     const ctx = this.ctx;
     ctx.beginPath(); pts.forEach((p, i) => (i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y))); ctx.closePath();
     if (fill) { ctx.fillStyle = fill; ctx.fill(); }
-    ctx.strokeStyle = INK; ctx.lineWidth = lw; ctx.stroke();
+    if (lw > 0) { ctx.strokeStyle = stroke; ctx.lineWidth = lw; ctx.stroke(); }
   }
-  line(x1: number, y1: number, x2: number, y2: number, lw = 1.5) {
-    const ctx = this.ctx; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.strokeStyle = INK; ctx.lineWidth = lw; ctx.stroke();
+  line(x1: number, y1: number, x2: number, y2: number, lw = 2, color = INK) {
+    const ctx = this.ctx; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.strokeStyle = color; ctx.lineWidth = lw; ctx.stroke();
+  }
+  blob(x: number, y: number, r: number, fill: string, lw = 2) {
+    const ctx = this.ctx; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fillStyle = fill; ctx.fill();
+    if (lw) { ctx.strokeStyle = INK; ctx.lineWidth = lw; ctx.stroke(); }
   }
   up(p: { x: number; y: number }, h: number) { return { x: p.x, y: p.y - h }; }
   S(gx: number, gy: number) { return this.toScreen(gx, gy); }
@@ -372,152 +437,177 @@ export class WorldEngine {
 
   private drawGround() {
     const ctx = this.ctx; const S = (a: number, b: number) => this.toScreen(a, b);
-    // yard outline, dashed
-    ctx.setLineDash([2, 6]); this.poly([S(0, 0), S(8, 0), S(8, 8), S(0, 8)], null, 1.2); ctx.setLineDash([]);
+    const E = 8.4; const d = this.TH * 0.55;
+    const down = (p: { x: number; y: number }) => ({ x: p.x, y: p.y + d });
+    // island sides (soil), then the grass top
+    this.poly([S(0, E), S(E, E), down(S(E, E)), down(S(0, E))], "#9a6b45");
+    this.poly([S(E, E), S(E, 0), down(S(E, 0)), down(S(E, E))], "#7c5235");
+    this.poly([S(0, 0), S(E, 0), S(E, E), S(0, E)], "#8cc463");
+    // grass texture (deterministic)
+    let seed = 7; const rnd = () => ((seed = (seed * 9301 + 49297) % 233280) / 233280);
+    for (let i = 0; i < 14; i++) { const p = S(rnd() * E, rnd() * E); ctx.fillStyle = "#9fd174"; ctx.beginPath(); ctx.ellipse(p.x, p.y, this.TW * 0.5, this.TH * 0.4, 0, 0, Math.PI * 2); ctx.fill(); }
+    for (let i = 0; i < 40; i++) {
+      const p = S(rnd() * E, rnd() * E);
+      this.line(p.x, p.y, p.x - 2, p.y - 6, 2, "#5f9a3d"); this.line(p.x + 3, p.y, p.x + 4, p.y - 7, 2, "#5f9a3d");
+    }
+    for (let i = 0; i < 22; i++) { const p = S(rnd() * E, 2.8 + rnd() * 5.4); ctx.fillStyle = i % 3 ? "#fff6c8" : YELLOW; ctx.fillRect(p.x, p.y, PX * 1.5, PX * 1.5); }
+    // dirt edge highlight
+    this.line(S(0, E).x, S(0, E).y, S(E, E).x, S(E, E).y, 2, "#5f9a3d");
     // sunbeam
     if (!this.night) {
       ctx.globalAlpha = 0.45;
-      this.poly([S(4, 1.4), S(5.6, 1.4), S(5.9, 3), S(4.3, 3)], YELLOW, 0.01);
+      this.poly([S(4, 1.4), S(5.6, 1.4), S(5.9, 3), S(4.3, 3)], YELLOW, 0);
       ctx.globalAlpha = 1;
     }
-    // path: stepping stones from the door to the bottom edge
+    // stepping-stone path from the door
     for (let i = 0; i < 6; i++) {
       const p = S(2.9 + (i % 2) * 0.25, 3.0 + i * 0.85);
-      ctx.beginPath(); ctx.ellipse(p.x, p.y, this.TW * 0.28, this.TH * 0.3, 0, 0, Math.PI * 2);
-      ctx.fillStyle = "#fff"; ctx.fill(); ctx.strokeStyle = INK; ctx.lineWidth = 1.4; ctx.stroke();
-    }
-    // street edge
-    this.line(S(0, 8.6).x, S(0, 8.6).y, S(8.6, 8.6).x, S(8.6, 8.6).y, 1.4);
-    this.line(S(8.6, 0).x, S(8.6, 0).y, S(8.6, 8.6).x, S(8.6, 8.6).y, 1.4);
-    // gravel + grass ticks (deterministic)
-    let seed = 7; const rnd = () => ((seed = (seed * 9301 + 49297) % 233280) / 233280);
-    ctx.fillStyle = INK;
-    for (let i = 0; i < 60; i++) { const p = S(3.6 + rnd() * 1.4, 0.3 + rnd() * 1.0); ctx.fillRect(p.x, p.y, 1.4, 1.4); }
-    for (let i = 0; i < 26; i++) {
-      const p = S(rnd() * 8, 3 + rnd() * 5);
-      this.line(p.x, p.y, p.x - 2, p.y - 5, 1); this.line(p.x + 3, p.y, p.x + 4, p.y - 6, 1);
+      ctx.beginPath(); ctx.ellipse(p.x, p.y, this.TW * 0.3, this.TH * 0.32, 0, 0, Math.PI * 2);
+      ctx.fillStyle = "#e0ad86"; ctx.fill(); ctx.strokeStyle = "#a8724d"; ctx.lineWidth = 2; ctx.stroke();
     }
   }
 
   private drawHouse(gx: number, gy: number, w: number, d: number) {
     const S = (a: number, b: number) => this.toScreen(a, b);
-    const h = this.TW * 1.25, rh = this.TW * 0.9;
-    const A = S(gx, gy), B = S(gx + w, gy), C = S(gx + w, gy + d), D = S(gx, gy + d);
+    const h = this.TW * 1.25, rh = this.TW * 0.95;
+    const B = S(gx + w, gy), C = S(gx + w, gy + d), D = S(gx, gy + d);
     const U = (p: { x: number; y: number }, k = h) => ({ x: p.x, y: p.y - k });
-    this.poly([B, C, U(C), U(B)]); // right wall
-    this.poly([D, C, U(C), U(D)]); // front wall
+    // stone foundation
+    this.poly([D, C, { x: C.x, y: C.y + 6 }, { x: D.x, y: D.y + 6 }], "#a9a29a");
+    this.poly([C, B, { x: B.x, y: B.y + 6 }, { x: C.x, y: C.y + 6 }], "#8f8880");
+    this.poly([B, C, U(C), U(B)], "#e8d8b4"); // side wall
+    this.poly([D, C, U(C), U(D)], "#f7eed8"); // front wall
+    // timber frame
+    const T = "#6b4226";
+    this.line(D.x, D.y - 2, C.x, C.y - 2, 3, T); this.line(U(D).x, U(D).y, U(C).x, U(C).y, 3, T);
+    this.line(C.x, C.y, U(C).x, U(C).y, 3, T); this.line(D.x, D.y, U(D).x, U(D).y, 3, T); this.line(B.x, B.y, U(B).x, U(B).y, 3, T);
+    const m = S(gx + w, gy + d / 2); this.line(m.x, m.y, m.x, m.y - h, 2.5, T);
     const R1 = U(S(gx, gy + d / 2), h + rh), R2 = U(S(gx + w, gy + d / 2), h + rh);
-    // chimney
+    // chimney (stone + cap)
     const ch = S(gx + w * 0.7, gy + d * 0.3);
-    this.poly([U(ch, h + rh * 0.4), U({ x: ch.x + 12, y: ch.y - 6 }, h + rh * 0.4), U({ x: ch.x + 12, y: ch.y - 6 }, h + rh + 26), U(ch, h + rh + 26)]);
-    this.poly([U(B), U(C), R2]); // gable
-    this.poly([U(D), U(C), R2, R1]); // roof front slope
-    // roof hatching
-    for (let i = 1; i < 12; i++) {
-      const t = i / 12;
-      const a = { x: U(D).x + (U(C).x - U(D).x) * t, y: U(D).y + (U(C).y - U(D).y) * t };
-      const b = { x: R1.x + (R2.x - R1.x) * t, y: R1.y + (R2.y - R1.y) * t };
-      this.line(a.x, a.y, b.x, b.y, 0.9);
+    this.poly([U(ch, h + rh * 0.4), U({ x: ch.x + 14, y: ch.y - 7 }, h + rh * 0.4), U({ x: ch.x + 14, y: ch.y - 7 }, h + rh + 26), U(ch, h + rh + 26)], "#b9b2a6");
+    this.poly([U({ x: ch.x - 3, y: ch.y }, h + rh + 26), U({ x: ch.x + 17, y: ch.y - 7 }, h + rh + 26), U({ x: ch.x + 17, y: ch.y - 7 }, h + rh + 32), U({ x: ch.x - 3, y: ch.y }, h + rh + 32)], "#7a4a2a");
+    this.poly([U(B), U(C), R2], "#e8d8b4"); // gable
+    // round attic window in the gable
+    const gw = { x: (U(B).x + U(C).x + R2.x) / 3, y: (U(B).y + U(C).y + R2.y) / 3 + 4 };
+    this.blob(gw.x, gw.y, this.TW * 0.12, "#9fd3f2", 2.5);
+    // red tiled roof with eaves
+    const eave = 6;
+    const E1 = { x: U(D).x - eave, y: U(D).y + eave * 0.6 }, E2 = { x: U(C).x + eave * 0.3, y: U(C).y + eave * 0.8 };
+    this.poly([E1, E2, R2, R1], "#c2473e", 2.5);
+    for (let i = 1; i < 6; i++) {
+      const t = i / 6;
+      const a = { x: E1.x + (R1.x - E1.x) * t, y: E1.y + (R1.y - E1.y) * t }, b = { x: E2.x + (R2.x - E2.x) * t, y: E2.y + (R2.y - E2.y) * t };
+      this.line(a.x, a.y, b.x, b.y, 2, "#922f2a");
     }
-    // door on front wall
-    const d0 = S(gx + w * 0.62, gy + d), d1 = S(gx + w * 0.86, gy + d);
-    this.poly([d0, d1, U(d1, h * 0.62), U(d0, h * 0.62)]);
-    // window
+    for (let i = 1; i < 10; i++) {
+      const t = i / 10;
+      const a = { x: E1.x + (E2.x - E1.x) * t, y: E1.y + (E2.y - E1.y) * t }, b = { x: R1.x + (R2.x - R1.x) * t, y: R1.y + (R2.y - R1.y) * t };
+      this.line(a.x, a.y, (a.x * 2 + b.x) / 3, (a.y * 2 + b.y) / 3, 1.5, "#a83a33");
+    }
+    this.line(R1.x, R1.y, R2.x, R2.y, 4, "#7d2622");
+    // door with arch + step
+    const d0 = S(gx + w * 0.6, gy + d), d1 = S(gx + w * 0.86, gy + d);
+    this.poly([d0, d1, U(d1, h * 0.64), U(d0, h * 0.64)], "#8a5530", 2.5);
+    this.line((d0.x + d1.x) / 2, (d0.y + d1.y) / 2 - 2, (d0.x + d1.x) / 2, (d0.y + d1.y) / 2 - h * 0.62, 1.5, "#5c3519");
+    this.blob(d1.x - 6, d1.y - h * 0.3, 2, YELLOW, 0);
+    this.poly([{ x: d0.x - 4, y: d0.y + 2 }, { x: d1.x + 4, y: d1.y - 1 }, { x: d1.x + 8, y: d1.y + 5 }, { x: d0.x, y: d0.y + 8 }], "#bdb6aa");
+    // window with frame, cross and flower box
     const w0 = S(gx + w * 0.15, gy + d), w1 = S(gx + w * 0.4, gy + d);
-    this.poly([U(w0, h * 0.45), U(w1, h * 0.45), U(w1, h * 0.8), U(w0, h * 0.8)]);
-    const wm0 = { x: (w0.x + w1.x) / 2, y: (w0.y + w1.y) / 2 };
-    this.line(wm0.x, wm0.y - h * 0.45, wm0.x, wm0.y - h * 0.8, 1.2);
-    // vine
-    const v = S(gx + w * 0.95, gy + d);
-    for (let i = 0; i < 5; i++) { this.line(v.x, v.y - i * 9, v.x, v.y - i * 9 - 9, 1); this.line(v.x, v.y - i * 9 - 5, v.x - 4, v.y - i * 9 - 9, 1); }
-    void A;
+    this.poly([U(w0, h * 0.45), U(w1, h * 0.45), U(w1, h * 0.8), U(w0, h * 0.8)], this.night ? "#ffd884" : "#9fd3f2", 3, T);
+    const wm = { x: (w0.x + w1.x) / 2, y: (w0.y + w1.y) / 2 };
+    this.line(wm.x, wm.y - h * 0.45, wm.x, wm.y - h * 0.8, 2, T);
+    this.line(U(w0, h * 0.625).x, U(w0, h * 0.625).y, U(w1, h * 0.625).x, U(w1, h * 0.625).y, 2, T);
+    this.poly([U(w0, h * 0.38), U(w1, h * 0.38), U(w1, h * 0.45), U(w0, h * 0.45)], "#8a5530", 2);
+    for (let i = 0; i < 4; i++) { const t = (i + 0.5) / 4; this.blob(w0.x + (w1.x - w0.x) * t, w0.y + (w1.y - w0.y) * t - h * 0.47, 3.5, i % 2 ? "#e85a6a" : "#6fb04a", 0); }
+    // bushes along the front
+    for (const t of [0.05, 0.45, 0.95]) { const p = S(gx + w * t, gy + d + 0.15); this.blob(p.x, p.y - 6, this.TW * 0.16, "#5f9e3c", 2); this.blob(p.x - 3, p.y - 9, this.TW * 0.07, "#8cc463", 0); }
   }
 
   private drawTree(gx: number, gy: number, s = 1) {
-    const ctx = this.ctx; const p = this.toScreen(gx, gy); const r = this.TW * 0.55 * s;
-    this.line(p.x, p.y, p.x, p.y - r * 2.2, 2); this.line(p.x, p.y - r * 1.4, p.x + 8, p.y - r * 1.8, 1.5);
-    ctx.beginPath();
-    const cy = p.y - r * 2.6;
-    for (let i = 0; i < 9; i++) { const a = (i / 9) * Math.PI * 2; ctx.arc(p.x + Math.cos(a) * r * 0.75, cy + Math.sin(a) * r * 0.6, r * 0.42, a - 1.2, a + 1.2); }
-    ctx.closePath(); ctx.fillStyle = "#fff"; ctx.fill(); ctx.strokeStyle = INK; ctx.lineWidth = 1.6; ctx.stroke();
-    this.line(p.x - r * 0.3, cy, p.x - r * 0.1, cy - 4, 1); this.line(p.x + r * 0.2, cy + 6, p.x + r * 0.35, cy + 2, 1);
+    const p = this.toScreen(gx, gy); const r = this.TW * 0.55 * s;
+    this.poly([{ x: p.x - 5, y: p.y }, { x: p.x + 5, y: p.y }, { x: p.x + 4, y: p.y - r * 1.9 }, { x: p.x - 4, y: p.y - r * 1.9 }], "#7a4a2a");
+    const cy = p.y - r * 2.4;
+    this.blob(p.x - r * 0.45, cy + r * 0.25, r * 0.6, "#4f8a32");
+    this.blob(p.x + r * 0.45, cy + r * 0.25, r * 0.6, "#4f8a32");
+    this.blob(p.x, cy - r * 0.15, r * 0.75, "#62a33f");
+    this.blob(p.x - r * 0.2, cy - r * 0.35, r * 0.32, "#8cc463", 0);
+    this.blob(p.x + r * 0.3, cy + r * 0.1, r * 0.2, "#8cc463", 0);
   }
 
   private drawMailbox(gx: number, gy: number) {
     const ctx = this.ctx; const p = this.toScreen(gx, gy);
-    this.line(p.x, p.y, p.x, p.y - 26, 2.2);
+    this.poly([{ x: p.x - 2, y: p.y }, { x: p.x + 2, y: p.y }, { x: p.x + 2, y: p.y - 26 }, { x: p.x - 2, y: p.y - 26 }], "#7a4a2a");
     ctx.beginPath(); ctx.moveTo(p.x - 12, p.y - 26); ctx.lineTo(p.x + 12, p.y - 26); ctx.lineTo(p.x + 12, p.y - 40);
     ctx.arc(p.x, p.y - 40, 12, 0, Math.PI, true); ctx.closePath();
-    ctx.fillStyle = "#fff"; ctx.fill(); ctx.strokeStyle = INK; ctx.lineWidth = 1.6; ctx.stroke();
-    this.line(p.x + 12, p.y - 42, p.x + 12, p.y - 54, 1.5);
+    ctx.fillStyle = "#c8323a"; ctx.fill(); ctx.strokeStyle = INK; ctx.lineWidth = 2; ctx.stroke();
+    this.line(p.x + 12, p.y - 42, p.x + 12, p.y - 54, 2);
     ctx.fillStyle = YELLOW; ctx.fillRect(p.x + 12, p.y - 54, 9, 6); ctx.strokeRect(p.x + 12, p.y - 54, 9, 6);
-    ctx.font = "700 11px Gaegu, cursive"; ctx.textAlign = "center"; ctx.fillStyle = INK; ctx.fillText("✉", p.x, p.y - 32);
+    ctx.fillStyle = "#fff"; ctx.fillRect(p.x - 6, p.y - 36, 12, 7);
   }
 
   private drawFencePost(gx: number, gy: number) {
     const p = this.toScreen(gx, gy), q = this.toScreen(gx + 1.1, gy);
-    this.line(p.x, p.y, p.x, p.y - 22, 1.6);
-    this.line(p.x, p.y - 8, q.x, q.y - 8, 1.2); this.line(p.x, p.y - 17, q.x, q.y - 17, 1.2);
+    this.line(p.x, p.y - 9, q.x, q.y - 9, 3, "#9a6a40"); this.line(p.x, p.y - 18, q.x, q.y - 18, 3, "#9a6a40");
+    this.poly([{ x: p.x - 3, y: p.y }, { x: p.x + 3, y: p.y }, { x: p.x + 3, y: p.y - 24 }, { x: p.x, y: p.y - 28 }, { x: p.x - 3, y: p.y - 24 }], "#b07a4a");
   }
 
   private drawBowl(gx: number, gy: number) {
     const ctx = this.ctx; const p = this.toScreen(gx, gy); const w = this.TW * 0.36;
-    ctx.beginPath(); ctx.ellipse(p.x, p.y - 6, w, w * 0.4, 0, 0, Math.PI * 2);
-    ctx.fillStyle = "#fff"; ctx.fill(); ctx.strokeStyle = INK; ctx.lineWidth = 1.6; ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(p.x - w, p.y - 6); ctx.quadraticCurveTo(p.x, p.y + 10, p.x + w, p.y - 6); ctx.stroke();
-    if (this.bowl) {
-      ctx.fillStyle = YELLOW; ctx.beginPath(); ctx.ellipse(p.x, p.y - 7, w * 0.75, w * 0.26, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-      if (this.bowl === "fish") { this.line(p.x - 8, p.y - 12, p.x + 6, p.y - 12, 1.5); this.line(p.x + 6, p.y - 12, p.x + 11, p.y - 16, 1.4); this.line(p.x + 6, p.y - 12, p.x + 11, p.y - 8, 1.4); }
-    }
+    ctx.beginPath(); ctx.moveTo(p.x - w, p.y - 6); ctx.quadraticCurveTo(p.x, p.y + 12, p.x + w, p.y - 6); ctx.closePath();
+    ctx.fillStyle = "#7fb2e0"; ctx.fill(); ctx.strokeStyle = INK; ctx.lineWidth = 2; ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(p.x, p.y - 6, w, w * 0.38, 0, 0, Math.PI * 2);
+    ctx.fillStyle = this.bowl ? "#e9a64f" : "#d9e9f6"; ctx.fill(); ctx.stroke();
+    if (this.bowl === "fish") { ctx.fillStyle = "#f2c27b"; ctx.beginPath(); ctx.ellipse(p.x - 2, p.y - 9, 9, 4, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); }
+    else if (this.bowl) for (let i = 0; i < 5; i++) { ctx.fillStyle = "#b5733a"; ctx.fillRect(p.x - 10 + i * 4, p.y - 9 + (i % 2) * 2, PX * 1.5, PX * 1.5); }
+  }
+
+  private sheet(name: string) { return this.sheets[name]; }
+
+  /** Draw one 48×48 sprite frame with feet on point (x, y). */
+  private sprite(img: HTMLImageElement | undefined, frame: number, x: number, y: number, flip: boolean, sx = 1, sy = 1) {
+    if (!img || !img.complete || !img.naturalWidth) return;
+    const ctx = this.ctx; const k = this.spriteK() * PX;
+    ctx.save();
+    ctx.translate(Math.round(x), Math.round(y));
+    ctx.scale((flip ? -1 : 1) * sx, sy);
+    ctx.drawImage(img, frame * 48, 0, 48, 48, -24.5 * k, -48 * k, 48 * k, 48 * k);
+    ctx.restore();
   }
 
   private drawCoco() {
-    const c = this.coco; const ctx = this.ctx; const p = this.cocoScreen(); const size = this.cocoSize();
-    const pose: CocoPose =
-      c.state === "walk" || c.state === "chase" || c.state === "zoom" ? "walk" :
-      c.state === "nap" || c.state === "sleep" ? "sleep" :
-      c.state === "eat" ? "eat" : c.state === "puff" ? "puff" : c.state === "cuddle" ? "purr" : c.state === "happy" ? "play" :
-      (this.cb.getBehaviours() >= 2 && Math.floor(this.time / 9) % 3 === 2) ? "sleep" : "sit";
-    const blink = pose === "sit" && c.blink;
-    const key = `coco-${pose}-${blink}-${c.step % 2}`;
-    const im = this.img(key, () => cocoSvg({ pose, blink, step: c.step % 2, accessories: false, outline: INK }));
-    const chonk = this.cb.getChonk() / 100;
-    const w = size * (1 + chonk * 0.12), h = size * (210 / 220);
-    // soft shadow
-    ctx.fillStyle = "rgba(0,0,0,.08)"; ctx.beginPath(); ctx.ellipse(p.x, p.y, w * 0.38, w * 0.1, 0, 0, Math.PI * 2); ctx.fill();
-    const hop = this.jump > 0 ? Math.sin((this.jump / 0.18) * Math.PI) * 8 : 0;
-    const breathe = pose === "sleep" || pose === "purr" ? Math.sin(this.time * 2) * 1.2 : 0;
-    ctx.save();
-    ctx.translate(p.x, p.y - hop);
-    if (c.dir < 0 && pose === "walk") ctx.scale(-1, 1);
-    if (im.complete) ctx.drawImage(im, -w / 2, -h - breathe, w, h + breathe);
-    ctx.restore();
-    if (pose === "sleep") {
-      ctx.font = "700 14px Gaegu, cursive"; ctx.fillStyle = this.night ? "#fff" : INK; ctx.textAlign = "left";
-      ctx.globalAlpha = 0.5 + Math.sin(this.time * 2) * 0.5; ctx.fillText("z z z", p.x + w * 0.2, p.y - h * 0.9); ctx.globalAlpha = 1;
-    }
-    if (this.attention) {
-      const bx = p.x + w * 0.35, by = p.y - h - 10;
-      ctx.fillStyle = YELLOW; ctx.strokeStyle = INK; ctx.lineWidth = 1.6;
-      ctx.beginPath(); ctx.roundRect(bx - 18, by - 14, 36, 22, 11); ctx.fill(); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(bx - 8, by + 8); ctx.lineTo(bx - 14, by + 16); ctx.lineTo(bx - 1, by + 8); ctx.fillStyle = YELLOW; ctx.fill(); ctx.stroke();
-      ctx.fillStyle = INK; for (let i = -1; i <= 1; i++) { ctx.beginPath(); ctx.arc(bx + i * 8, by - 3 + (Math.floor(this.time * 3) % 3 === i + 1 ? -2 : 0), 2, 0, Math.PI * 2); ctx.fill(); }
+    const c = this.coco; const ctx = this.ctx; const p = this.cocoScreen(); const s = this.cocoSize();
+    const chonk = 1 + this.cb.getChonk() / 100 * 0.15;
+    ctx.fillStyle = "rgba(40,60,30,.22)"; ctx.beginPath(); ctx.ellipse(p.x, p.y, s * 0.45, s * 0.12, 0, 0, Math.PI * 2); ctx.fill();
+    const flip = c.dir < 0;
+    const moving = c.state === "walk" || c.state === "chase" || c.state === "zoom";
+    const loaf = c.state === "idle" && this.cb.getBehaviours() >= 2 && Math.floor(this.time / 9) % 3 === 2;
+    if (moving) {
+      const fps = c.state === "zoom" ? 22 : c.state === "chase" ? 16 : 11;
+      this.sprite(this.sheet("run"), Math.floor(this.time * fps) % 6, p.x, p.y, flip, chonk);
+    } else if (c.state === "sleep" || c.state === "nap" || loaf) {
+      const br = 1 + Math.sin(this.time * 2) * 0.03;
+      this.sprite(this.sheet("sleep"), 0, p.x, p.y, flip, chonk * 1.04, 0.9 * br);
+    } else if (c.state === "puff") {
+      const sh = Math.sin(this.time * 40) * 1.5;
+      this.sprite(this.sheet("idle"), 0, p.x + sh, p.y, flip, chonk * 1.18, 1.15);
+    } else {
+      const f = Math.floor(this.time * 8) % 12;
+      const bob = c.state === "eat" ? (Math.floor(this.time * 5) % 2) * 3 : 0;
+      const hop = c.state === "happy" ? Math.abs(Math.sin(this.time * 9)) * 6 + this.jump * 30 : this.jump > 0 ? Math.sin((this.jump / 0.18) * Math.PI) * 8 : 0;
+      const sq = c.state === "cuddle" ? 1 + Math.sin(this.time * 6) * 0.04 : 1;
+      this.sprite(this.sheet("idle"), f, p.x, p.y + bob - hop, flip, chonk * sq, 1 / sq);
     }
   }
 
-  private drawStray(s: Stray) {
-    const ctx = this.ctx; const p = this.toScreen(s.gx, s.gy); const size = this.TW * 1.05;
-    const pose: CocoPose = s.mode === "standoff" ? "puff" : "walk";
-    const step = Math.floor(this.time * (s.mode === "flee" ? 12 : 5)) % 2;
-    const im = this.img(`stray-${s.fur}-${pose}-${step}`, () => cocoSvg({ pose, step, accessories: false, outline: INK, fur: s.fur, eye: s.eye }));
-    ctx.save(); ctx.translate(p.x, p.y);
-    if (s.dir < 0 && pose === "walk") ctx.scale(-1, 1);
-    const shake = s.mode === "standoff" ? Math.sin(this.time * 30) * 1.2 : 0;
-    if (im.complete) ctx.drawImage(im, -size / 2 + shake, -size * 0.95, size, size * 0.95);
-    ctx.restore();
-    if (s.mode === "standoff") {
-      ctx.font = "700 15px Gaegu, cursive"; ctx.textAlign = "center"; ctx.fillStyle = INK;
-      ctx.fillText("hsss", p.x, p.y - size - 4);
+  private drawStray(st: Stray) {
+    const ctx = this.ctx; const p = this.toScreen(st.gx, st.gy); const s = this.cocoSize();
+    ctx.fillStyle = "rgba(40,60,30,.22)"; ctx.beginPath(); ctx.ellipse(p.x, p.y, s * 0.4, s * 0.1, 0, 0, Math.PI * 2); ctx.fill();
+    if (st.mode === "standoff") {
+      const sh = Math.sin(this.time * 30) * 1.2;
+      this.sprite(this.sheet(`${st.fur}-idle`), 0, p.x + sh, p.y, st.dir < 0, 1.15, 1.12);
+    } else {
+      this.sprite(this.sheet(`${st.fur}-run`), Math.floor(this.time * (st.mode === "flee" ? 20 : 11)) % 6, p.x, p.y, st.dir < 0);
     }
   }
 
@@ -532,24 +622,24 @@ export class WorldEngine {
 
 // ---------- furniture (line art) ----------
 type ItemDraw = (e: WorldEngine, gx: number, gy: number) => void;
-const ell = (e: WorldEngine, x: number, y: number, rx: number, ry: number, fill = "#fff") => {
-  const c = e.c2d; c.beginPath(); c.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2); c.fillStyle = fill; c.fill(); c.strokeStyle = INK; c.lineWidth = 1.5; c.stroke();
+const ell = (e: WorldEngine, x: number, y: number, rx: number, ry: number, fill = CREAM) => {
+  const c = e.c2d; c.beginPath(); c.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2); c.fillStyle = fill; c.fill(); c.strokeStyle = INK; c.lineWidth = 2; c.stroke();
 };
-const rect = (e: WorldEngine, x: number, y: number, w: number, h: number, fill = "#fff") => {
-  const c = e.c2d; c.fillStyle = fill; c.fillRect(x, y, w, h); c.strokeStyle = INK; c.lineWidth = 1.5; c.strokeRect(x, y, w, h);
+const rect = (e: WorldEngine, x: number, y: number, w: number, h: number, fill = CREAM) => {
+  const c = e.c2d; c.fillStyle = fill; c.fillRect(x, y, w, h); c.strokeStyle = INK; c.lineWidth = 2; c.strokeRect(x, y, w, h);
 };
 
 export const ITEMS: Record<string, { gx: number; gy: number; draw: ItemDraw }> = {
-  bed: { gx: 5.9, gy: 1.6, draw: (e, gx, gy) => { const p = e.S(gx, gy); ell(e, p.x, p.y - 4, e.tw * 0.62, e.tw * 0.26); ell(e, p.x, p.y - 6, e.tw * 0.44, e.tw * 0.16, YELLOW); } },
-  plant: { gx: 0.6, gy: 4.4, draw: (e, gx, gy) => { const p = e.S(gx, gy); rect(e, p.x - 9, p.y - 16, 18, 16); for (const a of [-0.6, 0, 0.6]) e.line(p.x, p.y - 16, p.x + Math.sin(a) * 18, p.y - 16 - Math.cos(a) * 20, 1.5); ell(e, p.x - 10, p.y - 32, 5, 3); ell(e, p.x + 10, p.y - 32, 5, 3); ell(e, p.x, p.y - 37, 4, 5); } },
-  box: { gx: 6.4, gy: 5.2, draw: (e, gx, gy) => { const p = e.S(gx, gy); rect(e, p.x - 16, p.y - 20, 32, 20); e.line(p.x - 16, p.y - 20, p.x - 24, p.y - 28); e.line(p.x + 16, p.y - 20, p.x + 24, p.y - 28); } },
-  post: { gx: 6.8, gy: 2.6, draw: (e, gx, gy) => { const p = e.S(gx, gy); ell(e, p.x, p.y - 2, 14, 5); rect(e, p.x - 5, p.y - 44, 10, 42); for (let i = 0; i < 6; i++) e.line(p.x - 5, p.y - 8 - i * 6, p.x + 5, p.y - 12 - i * 6, 1); ell(e, p.x, p.y - 46, 12, 5); } },
-  flowers: { gx: 1.4, gy: 6.4, draw: (e, gx, gy) => { const p = e.S(gx, gy); ell(e, p.x, p.y, e.tw * 0.5, e.tw * 0.2); for (let i = -2; i <= 2; i++) { e.line(p.x + i * 8, p.y - 2, p.x + i * 8, p.y - 14, 1.2); ell(e, p.x + i * 8, p.y - 16, 3.5, 3.5, i % 2 ? YELLOW : "#fff"); } } },
-  tree: { gx: 4.6, gy: 6.6, draw: (e, gx, gy) => { const p = e.S(gx, gy); rect(e, p.x - 4, p.y - 64, 8, 64); ell(e, p.x, p.y - 2, 18, 6); ell(e, p.x, p.y - 34, 16, 5); ell(e, p.x, p.y - 66, 14, 6); rect(e, p.x + 8, p.y - 52, 18, 12); } },
-  lamp: { gx: 3.2, gy: 4.2, draw: (e, gx, gy) => { const p = e.S(gx, gy); e.line(p.x, p.y, p.x, p.y - 46, 2); ell(e, p.x, p.y - 50, 7, 7, YELLOW); e.line(p.x - 9, p.y - 56, p.x + 9, p.y - 56, 2); } },
-  rug: { gx: 5.0, gy: 3.8, draw: (e, gx, gy) => { const p = e.S(gx, gy); ell(e, p.x, p.y, e.tw * 0.8, e.tw * 0.35); const c = e.c2d; c.setLineDash([3, 4]); ell(e, p.x, p.y, e.tw * 0.6, e.tw * 0.25); c.setLineDash([]); } },
-  mouse: { gx: 3.8, gy: 5.8, draw: (e, gx, gy) => { const p = e.S(gx, gy); ell(e, p.x, p.y - 5, 8, 5); ell(e, p.x - 6, p.y - 10, 3, 3); const c = e.c2d; c.beginPath(); c.moveTo(p.x + 8, p.y - 5); c.quadraticCurveTo(p.x + 16, p.y - 12, p.x + 20, p.y - 4); c.stroke(); } },
-  pond: { gx: 7.0, gy: 7.0, draw: (e, gx, gy) => { const p = e.S(gx, gy); ell(e, p.x, p.y, e.tw * 0.8, e.tw * 0.34); e.line(p.x - 12, p.y - 2, p.x + 2, p.y - 2, 1.4); e.line(p.x + 2, p.y - 2, p.x + 7, p.y - 6, 1.2); e.line(p.x + 2, p.y - 2, p.x + 7, p.y + 2, 1.2); e.line(p.x + 14, p.y + 4, p.x + 24, p.y + 4, 1); } },
-  bench: { gx: 2.6, gy: 7.4, draw: (e, gx, gy) => { const p = e.S(gx, gy); rect(e, p.x - 24, p.y - 18, 48, 6); rect(e, p.x - 24, p.y - 32, 48, 8); e.line(p.x - 20, p.y - 12, p.x - 20, p.y, 2); e.line(p.x + 20, p.y - 12, p.x + 20, p.y, 2); } },
-  sunflower: { gx: 7.4, gy: 4.0, draw: (e, gx, gy) => { const p = e.S(gx, gy); for (const dx of [-8, 8]) { e.line(p.x + dx, p.y, p.x + dx, p.y - 44, 1.6); ell(e, p.x + dx, p.y - 48, 9, 9, YELLOW); ell(e, p.x + dx, p.y - 48, 4, 4, INK); } } },
+  bed: { gx: 5.9, gy: 1.6, draw: (e, gx, gy) => { const p = e.S(gx, gy); ell(e, p.x, p.y - 4, e.tw * 0.62, e.tw * 0.26, "#c8323a"); ell(e, p.x, p.y - 7, e.tw * 0.44, e.tw * 0.16, "#f6dcd9"); } },
+  plant: { gx: 0.6, gy: 4.4, draw: (e, gx, gy) => { const p = e.S(gx, gy); for (const a of [-0.6, 0, 0.6]) e.line(p.x, p.y - 16, p.x + Math.sin(a) * 18, p.y - 16 - Math.cos(a) * 20, 3, "#4f8a32"); ell(e, p.x - 10, p.y - 32, 6, 4, "#62a33f"); ell(e, p.x + 10, p.y - 32, 6, 4, "#62a33f"); ell(e, p.x, p.y - 37, 5, 6, "#8cc463"); rect(e, p.x - 9, p.y - 16, 18, 16, "#c96f45"); } },
+  box: { gx: 6.4, gy: 5.2, draw: (e, gx, gy) => { const p = e.S(gx, gy); rect(e, p.x - 16, p.y - 20, 32, 20, "#d4a26a"); e.line(p.x - 16, p.y - 20, p.x - 24, p.y - 28, 3, "#b5814a"); e.line(p.x + 16, p.y - 20, p.x + 24, p.y - 28, 3, "#b5814a"); e.line(p.x - 6, p.y - 12, p.x + 6, p.y - 12, 2, "#8a5a34"); } },
+  post: { gx: 6.8, gy: 2.6, draw: (e, gx, gy) => { const p = e.S(gx, gy); ell(e, p.x, p.y - 2, 14, 5, "#7fb2e0"); rect(e, p.x - 5, p.y - 44, 10, 42, "#e0c08c"); for (let i = 0; i < 6; i++) e.line(p.x - 5, p.y - 8 - i * 6, p.x + 5, p.y - 12 - i * 6, 1.5, "#a8724d"); ell(e, p.x, p.y - 46, 12, 5, "#7fb2e0"); } },
+  flowers: { gx: 1.4, gy: 6.4, draw: (e, gx, gy) => { const p = e.S(gx, gy); ell(e, p.x, p.y, e.tw * 0.5, e.tw * 0.2, "#9a6b45"); for (let i = -2; i <= 2; i++) { e.line(p.x + i * 8, p.y - 2, p.x + i * 8, p.y - 14, 2, "#4f8a32"); ell(e, p.x + i * 8, p.y - 16, 4, 4, ["#e85a6a", YELLOW, "#f7eed8", "#b07fe0", "#e85a6a"][i + 2]); } } },
+  tree: { gx: 4.6, gy: 6.6, draw: (e, gx, gy) => { const p = e.S(gx, gy); rect(e, p.x - 4, p.y - 64, 8, 64, "#e0c08c"); ell(e, p.x, p.y - 2, 18, 6, "#b07fe0"); ell(e, p.x, p.y - 34, 16, 5, "#b07fe0"); ell(e, p.x, p.y - 66, 14, 6, "#b07fe0"); rect(e, p.x + 8, p.y - 52, 18, 12, "#d4a26a"); } },
+  lamp: { gx: 3.2, gy: 4.2, draw: (e, gx, gy) => { const p = e.S(gx, gy); e.line(p.x, p.y, p.x, p.y - 46, 3, "#3b2a20"); ell(e, p.x, p.y - 50, 7, 7, YELLOW); e.line(p.x - 9, p.y - 57, p.x + 9, p.y - 57, 3, "#3b2a20"); } },
+  rug: { gx: 5.0, gy: 3.8, draw: (e, gx, gy) => { const p = e.S(gx, gy); ell(e, p.x, p.y, e.tw * 0.8, e.tw * 0.35, "#a9c8e3"); const c = e.c2d; c.setLineDash([4, 4]); ell(e, p.x, p.y, e.tw * 0.6, e.tw * 0.25, "#a9c8e3"); c.setLineDash([]); } },
+  mouse: { gx: 3.8, gy: 5.8, draw: (e, gx, gy) => { const p = e.S(gx, gy); ell(e, p.x, p.y - 5, 8, 5, "#b9b2a6"); ell(e, p.x - 6, p.y - 10, 3, 3, "#f4a3b5"); const c = e.c2d; c.beginPath(); c.moveTo(p.x + 8, p.y - 5); c.quadraticCurveTo(p.x + 16, p.y - 12, p.x + 20, p.y - 4); c.stroke(); } },
+  pond: { gx: 7.0, gy: 7.0, draw: (e, gx, gy) => { const p = e.S(gx, gy); ell(e, p.x, p.y, e.tw * 0.8, e.tw * 0.34, "#6fa8d8"); ell(e, p.x + 4, p.y + 2, e.tw * 0.5, e.tw * 0.18, "#8fc0e8"); e.line(p.x - 12, p.y - 2, p.x + 2, p.y - 2, 3, "#e9893f"); e.line(p.x + 2, p.y - 2, p.x + 7, p.y - 6, 2, "#e9893f"); e.line(p.x + 2, p.y - 2, p.x + 7, p.y + 2, 2, "#e9893f"); } },
+  bench: { gx: 2.6, gy: 7.4, draw: (e, gx, gy) => { const p = e.S(gx, gy); rect(e, p.x - 24, p.y - 18, 48, 6, "#b07a4a"); rect(e, p.x - 24, p.y - 32, 48, 8, "#b07a4a"); e.line(p.x - 20, p.y - 12, p.x - 20, p.y, 3); e.line(p.x + 20, p.y - 12, p.x + 20, p.y, 3); } },
+  sunflower: { gx: 7.4, gy: 4.0, draw: (e, gx, gy) => { const p = e.S(gx, gy); for (const dx of [-8, 8]) { e.line(p.x + dx, p.y, p.x + dx, p.y - 44, 3, "#4f8a32"); ell(e, p.x + dx, p.y - 48, 9, 9, YELLOW); ell(e, p.x + dx, p.y - 48, 4, 4, "#7a4a2a"); } } },
 };

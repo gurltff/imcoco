@@ -1,6 +1,31 @@
 import { AnimatePresence, motion } from "framer-motion";
 import type { ReactNode } from "react";
 import { xpToNext, type GameState } from "./state";
+import idleUrl from "./sprites/coco-idle.png";
+import runUrl from "./sprites/coco-run.png";
+import sleepUrl from "./sprites/coco-sleep.png";
+import cursorUrl from "./sprites/cursor.png";
+
+export const SHEETS = {
+  idle: { url: idleUrl, frames: 12, fps: 8 },
+  run: { url: runUrl, frames: 6, fps: 12 },
+  sleep: { url: sleepUrl, frames: 1, fps: 1 },
+};
+/** Little pixel Coco cursor for the game screens. */
+export const CAT_CURSOR = `url(${cursorUrl}) 0 0, auto`;
+
+/** Coco as an animated pixel sprite (48×48 frames, scaled by whole numbers so pixels stay crisp). */
+export function PixelCoco({ pose = "idle", scale = 2, flip = false, className = "" }: { pose?: keyof typeof SHEETS; scale?: number; flip?: boolean; className?: string }) {
+  const s = SHEETS[pose]; const size = 48 * scale;
+  return (
+    <div aria-hidden className={`pixel-sheet ${className}`} style={{
+      width: size, height: size, backgroundImage: `url(${s.url})`, backgroundSize: `${s.frames * size}px ${size}px`,
+      ["--end" as string]: `${-s.frames * size}px`,
+      animation: s.frames > 1 ? `pxsheet ${s.frames / s.fps}s steps(${s.frames}) infinite` : undefined,
+      transform: flip ? "scaleX(-1)" : undefined,
+    }} />
+  );
+}
 
 export const FishIcon = ({ s = 18 }: { s?: number }) => (
   <svg viewBox="0 0 40 24" width={s} height={s * 0.6} aria-hidden><path d="M4 12 Q14 1 28 12 Q14 23 4 12Z" fill="#FFE95C" stroke="#111" strokeWidth="2.4" strokeLinejoin="round" /><path d="M28 12 l8 -7 v14z" fill="#FFE95C" stroke="#111" strokeWidth="2.4" strokeLinejoin="round" /><circle cx="11" cy="11" r="1.8" fill="#111" /></svg>

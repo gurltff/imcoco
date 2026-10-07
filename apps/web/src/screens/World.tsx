@@ -1,10 +1,9 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { birthdayInfo } from "@coco/core";
-import { Coco } from "../components/Coco";
 import { BEHAVIOURS, FOODS, SHOP, chonkTitle, updateGame, useGame, type GameState } from "../game/state";
 import { WorldEngine } from "../game/engine";
-import { FishIcon, GameModal, Hud, RoundBtn, Toast, YarnIcon, YellowBtn } from "../game/ui";
+import { CAT_CURSOR, FishIcon, GameModal, Hud, PixelCoco, RoundBtn, Toast, YarnIcon, YellowBtn } from "../game/ui";
 import { coco } from "../lib/audio";
 import { readLocal, useSettings, writeLocal } from "../lib/store";
 import type { Screen } from "../lib/nav";
@@ -116,8 +115,8 @@ export function World({ onNav }: { onNav: (s: Screen) => void }) {
   };
 
   return (
-    <div className="relative h-full overflow-hidden bg-white font-game text-black">
-      <canvas ref={canvas} className="absolute inset-0 h-full w-full touch-manipulation" aria-label="Coco's little house and yard. Tap Coco to pet him." />
+    <div className="relative h-full overflow-hidden bg-[#a8cdc6] font-game text-black">
+      <canvas ref={canvas} style={{ cursor: CAT_CURSOR }} className="absolute inset-0 h-full w-full touch-manipulation" aria-label="Coco's little house and yard. Tap Coco to pet him." />
 
       <Hud g={g} onBack={() => onNav("home")}>
         <div className="pointer-events-auto mt-2 flex items-start justify-between">
@@ -227,7 +226,7 @@ function InfoModal({ open, onClose, g, onLearn }: { open: boolean; onClose: () =
       <div className="flex gap-3">
         <div className="flex w-32 shrink-0 flex-col items-center rounded border-2 border-black bg-white p-1">
           <span className="text-base">Normal</span>
-          <Coco pose="sit" size={100} accessories={false} outline="#111" />
+          <PixelCoco scale={2} />
           <span className="text-lg">Level {g.level}</span>
         </div>
         <div className="text-lg leading-snug">
