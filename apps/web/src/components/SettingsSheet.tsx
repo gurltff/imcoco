@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from "framer-motion";
+import { useState } from "react";
 import { coco } from "../lib/audio";
-import { useSettings } from "../lib/store";
+import { useLocal, useSettings } from "../lib/store";
 import { Coco } from "./Coco";
 
 function Toggle({ label, hint, checked, onChange }: { label: string; hint?: string; checked: boolean; onChange: (v: boolean) => void }) {
@@ -21,6 +22,8 @@ function Toggle({ label, hint, checked, onChange }: { label: string; hint?: stri
 export function SettingsSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [s, setS] = useSettings();
   const patch = (p: Partial<typeof s>) => setS({ ...s, ...p });
+  const [key, setKey] = useLocal<string>("anthropicKey", "");
+  const [draft, setDraft] = useState(key);
   return (
     <AnimatePresence>
       {open && (
@@ -48,6 +51,16 @@ export function SettingsSheet({ open, onClose }: { open: boolean; onClose: () =>
               <Toggle label="Captions" hint="Show text for Coco's sounds" checked={s.captions} onChange={(v) => patch({ captions: v })} />
               <Toggle label="Reduce motion" hint="Calmer, fewer animations" checked={s.reducedMotion} onChange={(v) => patch({ reducedMotion: v })} />
               <Toggle label="Coco notices when I'm sad" hint="Opt-in. Checked only on this device, never sent anywhere." checked={s.comfortDetection} onChange={(v) => patch({ comfortDetection: v })} />
+            </div>
+            <div className="mt-4 rounded-2xl border-2 border-dashed border-navy/30 p-3">
+              <p className="font-hand text-xl">Smart Coco (AI chat)</p>
+              <p className="text-xs text-navy/70">Paste a Claude API key from console.anthropic.com. It's saved only in this browser. In Smart mode your chat messages go to Anthropic to write Coco's replies.</p>
+              <div className="mt-2 flex gap-2">
+                <input type="password" autoComplete="off" value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="sk-ant-…" aria-label="Claude API key"
+                  className="min-h-[44px] min-w-0 flex-1 rounded-xl border-2 border-navy/60 bg-white px-3 text-sm" />
+                <button className="pill bg-baby px-3 text-base" onClick={() => setKey(draft.trim())}>{key && key === draft.trim() ? "Saved ✓" : "Save"}</button>
+              </div>
+              {key && <button className="mt-1 text-xs text-cherry underline" onClick={() => { setKey(""); setDraft(""); }}>Remove key</button>}
             </div>
             <div className="mt-4 rounded-2xl border-2 border-dashed border-navy/30 p-3">
               <p className="font-hand text-xl">Coco on your computer</p>

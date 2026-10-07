@@ -36,30 +36,40 @@ let P = { ...PALETTE };
 
 function eyes(x1: number, x2: number, y: number, mode: "open" | "closed" | "happy" | "narrow", o: string) {
   if (mode === "closed")
-    return `<path d="M${x1 - 10} ${y} Q${x1} ${y + 7} ${x1 + 10} ${y}M${x2 - 10} ${y} Q${x2} ${y + 7} ${x2 + 10} ${y}" stroke="${P.eye}" stroke-width="3.5" fill="none" stroke-linecap="round"/>`;
+    return `<path d="M${x1 - 11} ${y} Q${x1} ${y + 8} ${x1 + 11} ${y}M${x2 - 11} ${y} Q${x2} ${y + 8} ${x2 + 11} ${y}" stroke="${P.eye}" stroke-width="3.5" fill="none" stroke-linecap="round"/>` +
+      `<path d="M${x1 - 12} ${y - 2} l-4 -2M${x2 + 12} ${y - 2} l4 -2" stroke="${P.eye}" stroke-width="2" stroke-linecap="round" opacity=".7"/>`;
   if (mode === "happy")
-    return `<path d="M${x1 - 10} ${y + 3} Q${x1} ${y - 8} ${x1 + 10} ${y + 3}M${x2 - 10} ${y + 3} Q${x2} ${y - 8} ${x2 + 10} ${y + 3}" stroke="${P.eye}" stroke-width="4" fill="none" stroke-linecap="round"/>`;
-  const ry = mode === "narrow" ? 7 : 13;
+    return `<path d="M${x1 - 11} ${y + 4} Q${x1} ${y - 9} ${x1 + 11} ${y + 4}M${x2 - 11} ${y + 4} Q${x2} ${y - 9} ${x2 + 11} ${y + 4}" stroke="${P.eye}" stroke-width="4.5" fill="none" stroke-linecap="round"/>`;
+  const ry = mode === "narrow" ? 8 : 15;
   const one = (x: number, dir: number) =>
-    `<ellipse cx="${x}" cy="${y}" rx="12" ry="${ry}" fill="${P.eye}" stroke="${o}" stroke-width="2"/>` +
-    `<ellipse cx="${x}" cy="${y + 1}" rx="${mode === "narrow" ? 3 : 5.5}" ry="${ry - 3}" fill="${P.pupil}"/>` +
-    `<circle cx="${x + 4}" cy="${y - ry / 2.2}" r="3.2" fill="#fff"/><circle cx="${x - 4}" cy="${y + 4}" r="1.5" fill="#fff" opacity=".8"/>` +
+    `<ellipse cx="${x}" cy="${y}" rx="13.5" ry="${ry}" fill="url(#coco-iris)" stroke="${o}" stroke-width="2.2"/>` +
+    `<ellipse cx="${x + dir * 0.5}" cy="${y + 1.5}" rx="${mode === "narrow" ? 3 : 7}" ry="${ry - 2.5}" fill="${P.pupil}"/>` +
+    `<circle cx="${x + 4.5}" cy="${y - ry / 2.4}" r="4.2" fill="#fff"/>` +
+    `<circle cx="${x - 4.5}" cy="${y + 5}" r="2" fill="#fff" opacity=".85"/>` +
+    `<path d="M${x - 13} ${y - ry + 3} Q${x} ${y - ry - 5} ${x + 13} ${y - ry + 3}" stroke="${o}" stroke-width="2.6" fill="none" stroke-linecap="round"/>` +
     (mode === "narrow" ? `<path d="M${x - 13} ${y - 9 + dir * 5} L${x + 12} ${y - 9 - dir * 5}" stroke="${o}" stroke-width="3" stroke-linecap="round"/>` : "");
   return one(x1, -1) + one(x2, 1);
 }
 
 function face(cx: number, cy: number, mode: Parameters<typeof eyes>[3], o: string, mouthOpen = false) {
-  const whisk = "#B9BCC8";
+  const whisk = "#C9CCD8";
   return (
-    eyes(cx - 20, cx + 20, cy, mode, o) +
-    `<ellipse cx="${cx - 34}" cy="${cy + 14}" rx="7" ry="4" fill="${P.pink}" opacity=".55"/>` +
-    `<ellipse cx="${cx + 34}" cy="${cy + 14}" rx="7" ry="4" fill="${P.pink}" opacity=".55"/>` +
-    `<path d="M${cx - 4} ${cy + 12} L${cx + 4} ${cy + 12} L${cx} ${cy + 16} Z" fill="${P.pink}" stroke-linejoin="round"/>` +
+    `<path d="M${cx - 8} ${cy - 30} q2 7 0 12M${cx} ${cy - 33} q1 8 0 13M${cx + 8} ${cy - 30} q-2 7 0 12" stroke="${P.furShine}" stroke-width="3" fill="none" stroke-linecap="round" opacity=".9"/>` +
+    eyes(cx - 21, cx + 21, cy, mode, o) +
+    `<ellipse cx="${cx - 36}" cy="${cy + 15}" rx="8" ry="4.5" fill="${P.pink}" opacity=".6"/>` +
+    `<ellipse cx="${cx + 36}" cy="${cy + 15}" rx="8" ry="4.5" fill="${P.pink}" opacity=".6"/>` +
+    `<path d="M${cx - 4.5} ${cy + 12} Q${cx} ${cy + 10.5} ${cx + 4.5} ${cy + 12} Q${cx + 1} ${cy + 17} ${cx} ${cy + 17} Q${cx - 1} ${cy + 17} ${cx - 4.5} ${cy + 12}Z" fill="${P.pink}"/>` +
     (mouthOpen
-      ? `<path d="M${cx - 7} ${cy + 19} Q${cx} ${cy + 32} ${cx + 7} ${cy + 19} Z" fill="#E0566B" stroke="${whisk}" stroke-width="1.5"/>`
-      : `<path d="M${cx - 8} ${cy + 19} Q${cx - 4} ${cy + 24} ${cx} ${cy + 18} Q${cx + 4} ${cy + 24} ${cx + 8} ${cy + 19}" stroke="${whisk}" stroke-width="2" fill="none" stroke-linecap="round"/>`) +
-    `<path d="M${cx - 30} ${cy + 16} L${cx - 52} ${cy + 12}M${cx - 30} ${cy + 20} L${cx - 50} ${cy + 22}M${cx + 30} ${cy + 16} L${cx + 52} ${cy + 12}M${cx + 30} ${cy + 20} L${cx + 50} ${cy + 22}" stroke="${whisk}" stroke-width="1.6" stroke-linecap="round"/>`
+      ? `<path d="M${cx - 8} ${cy + 20} Q${cx} ${cy + 33} ${cx + 8} ${cy + 20} Z" fill="#E0566B" stroke="${whisk}" stroke-width="1.5"/><path d="M${cx - 4} ${cy + 26} q4 3 8 0" fill="#F49AAA"/>`
+      : `<path d="M${cx - 9} ${cy + 19} Q${cx - 4.5} ${cy + 25} ${cx} ${cy + 18.5} Q${cx + 4.5} ${cy + 25} ${cx + 9} ${cy + 19}" stroke="${whisk}" stroke-width="2.2" fill="none" stroke-linecap="round"/>`) +
+    `<path d="M${cx - 30} ${cy + 15} Q${cx - 44} ${cy + 9} ${cx - 56} ${cy + 11}M${cx - 30} ${cy + 20} Q${cx - 44} ${cy + 20} ${cx - 54} ${cy + 25}M${cx + 30} ${cy + 15} Q${cx + 44} ${cy + 9} ${cx + 56} ${cy + 11}M${cx + 30} ${cy + 20} Q${cx + 44} ${cy + 20} ${cx + 54} ${cy + 25}" stroke="${whisk}" stroke-width="1.6" fill="none" stroke-linecap="round"/>`
   );
+}
+
+/** little fluffy cheek tufts on the sides of the head */
+function cheeks(cx: number, cy: number, rx: number, o: string) {
+  return `<path d="M${cx - rx + 2} ${cy + 4} l-9 4 l7 3 l-8 5 l10 0" fill="${P.fur}" stroke="${o}" stroke-width="2.6" stroke-linejoin="round"/>` +
+    `<path d="M${cx + rx - 2} ${cy + 4} l9 4 l-7 3 l8 5 l-10 0" fill="${P.fur}" stroke="${o}" stroke-width="2.6" stroke-linejoin="round"/>`;
 }
 
 function ears(cx: number, top: number, o: string, flat = false) {
@@ -68,8 +78,9 @@ function ears(cx: number, top: number, o: string, flat = false) {
   return (
     `<path d="M${cx - 44} ${top + 38} L${cx - 38 - dx} ${top + dy} L${cx - 10} ${top + 24} Z" fill="${P.fur}" stroke="${o}" stroke-width="3.5" stroke-linejoin="round"/>` +
     `<path d="M${cx + 44} ${top + 38} L${cx + 38 + dx} ${top + dy} L${cx + 10} ${top + 24} Z" fill="${P.fur}" stroke="${o}" stroke-width="3.5" stroke-linejoin="round"/>` +
-    `<path d="M${cx - 36} ${top + 30} L${cx - 34 - dx} ${top + 12 + dy} L${cx - 20} ${top + 24} Z" fill="${P.pink}" opacity=".7"/>` +
-    `<path d="M${cx + 36} ${top + 30} L${cx + 34 + dx} ${top + 12 + dy} L${cx + 20} ${top + 24} Z" fill="${P.pink}" opacity=".7"/>`
+    `<path d="M${cx - 36} ${top + 30} L${cx - 34 - dx} ${top + 12 + dy} L${cx - 20} ${top + 24} Z" fill="url(#coco-ear)"/>` +
+    `<path d="M${cx + 36} ${top + 30} L${cx + 34 + dx} ${top + 12 + dy} L${cx + 20} ${top + 24} Z" fill="url(#coco-ear)"/>` +
+    `<path d="M${cx - 32} ${top + 26} l-2 -6M${cx - 29} ${top + 27} l1 -6M${cx + 32} ${top + 26} l2 -6M${cx + 29} ${top + 27} l-1 -6" stroke="#E9C9D2" stroke-width="1.4" stroke-linecap="round"/>`
   );
 }
 
@@ -77,7 +88,9 @@ function scarf(cx: number, y: number, o: string) {
   return (
     `<path d="M${cx - 44} ${y} Q${cx} ${y + 18} ${cx + 44} ${y} L${cx + 46} ${y + 12} Q${cx} ${y + 34} ${cx - 46} ${y + 12} Z" fill="${P.red}" stroke="${o}" stroke-width="3" stroke-linejoin="round"/>` +
     `<path d="M${cx + 18} ${y + 16} L${cx + 26} ${y + 40} L${cx + 40} ${y + 34} L${cx + 32} ${y + 12} Z" fill="${P.red}" stroke="${o}" stroke-width="3" stroke-linejoin="round"/>` +
-    `<path d="M${cx + 25} ${y + 36} l2 4 M${cx + 32} ${y + 34} l2 4" stroke="${o}" stroke-width="2" stroke-linecap="round"/>`
+    `<path d="M${cx - 30} ${y + 9} Q${cx} ${y + 22} ${cx + 30} ${y + 9}" stroke="#F3B9BD" stroke-width="2.2" fill="none" stroke-dasharray="2 6" stroke-linecap="round"/>` +
+    `<circle cx="${cx + 22}" cy="${y + 15}" r="6.5" fill="${P.red}" stroke="${o}" stroke-width="2.6"/>` +
+    `<path d="M${cx + 25} ${y + 36} l2 4 M${cx + 32} ${y + 34} l2 4 M${cx + 29} ${y + 35} l2 4" stroke="${o}" stroke-width="2" stroke-linecap="round"/>`
   );
 }
 
@@ -87,7 +100,9 @@ function hat(cx: number, top: number, o: string) {
     `<circle cx="${cx - 14}" cy="${top + 4}" r="13" fill="#fff" stroke="${o}" stroke-width="3"/>` +
     `<circle cx="${cx + 14}" cy="${top + 4}" r="13" fill="#fff" stroke="${o}" stroke-width="3"/>` +
     `<circle cx="${cx}" cy="${top - 4}" r="15" fill="#fff" stroke="${o}" stroke-width="3"/>` +
+    `<path d="M${cx - 22} ${top + 8} q6 5 12 1 M${cx + 8} ${top + 8} q6 5 12 0" stroke="#D5DEEA" stroke-width="3" fill="none" stroke-linecap="round"/>` +
     `<rect x="${cx - 20}" y="${top + 6}" width="40" height="16" rx="4" fill="#fff" stroke="${o}" stroke-width="3"/>` +
+    `<rect x="${cx - 17}" y="${top + 15}" width="34" height="4" rx="2" fill="#E3E9F2"/>` +
     `<path d="M${cx - 8} ${top + 10} v8 M${cx + 6} ${top + 10} v8" stroke="${o}" stroke-width="2" stroke-linecap="round"/>` +
     `</g>`
   );
@@ -112,16 +127,18 @@ function sitting(o: string, acc: boolean, mode: Parameters<typeof eyes>[3], opts
     : `<path d="M148 172 Q190 160 182 118" stroke="${o}" stroke-width="18" fill="none" stroke-linecap="round"/><path d="M148 172 Q190 160 182 118" stroke="${P.fur}" stroke-width="11" fill="none" stroke-linecap="round"/>`;
   const body = puff
     ? `<path d="${spikyPath(100, 146, 66, 50)}" fill="${P.fur}" stroke="${o}" stroke-width="3.5" stroke-linejoin="round"/>`
-    : `<ellipse cx="100" cy="146" rx="74" ry="53" fill="${P.fur}" stroke="${o}" stroke-width="3.5"/>` +
+    : `<ellipse cx="100" cy="146" rx="74" ry="53" fill="url(#coco-fur)" stroke="${o}" stroke-width="3.5"/>` +
+      `<ellipse cx="100" cy="160" rx="38" ry="28" fill="${P.furShine}" opacity=".45"/>` +
+      `<path d="M66 150 q4 6 0 12 M134 150 q-4 6 0 12" stroke="${P.furShine}" stroke-width="3" fill="none" stroke-linecap="round" opacity=".8"/>` +
       `<ellipse cx="72" cy="134" rx="22" ry="12" fill="${P.furShine}" opacity=".7"/>`;
   return (
     tail + body +
     `<ellipse cx="74" cy="192" rx="17" ry="9" fill="${P.fur}" stroke="${o}" stroke-width="3"/>` +
     `<ellipse cx="126" cy="192" rx="17" ry="9" fill="${P.fur}" stroke="${o}" stroke-width="3"/>` +
-    `<path d="M72 190 v5 M80 190 v5 M116 190 v5 M124 190 v5" stroke="#555" stroke-width="1.5" stroke-linecap="round"/>` +
+    `<path d="M68 192 v5 M76 192 v5 M120 192 v5 M128 192 v5" stroke="#555" stroke-width="1.6" stroke-linecap="round"/>` +
     ears(100, 38, o, puff) +
     (puff ? `<path d="${spikyPath(100, 92, 56, 46, 20)}" fill="${P.fur}" stroke="${o}" stroke-width="3.5" stroke-linejoin="round"/>`
-          : `<ellipse cx="100" cy="92" rx="60" ry="47" fill="${P.fur}" stroke="${o}" stroke-width="3.5"/>`) +
+          : cheeks(100, 92, 60, o) + `<ellipse cx="100" cy="92" rx="60" ry="47" fill="url(#coco-fur)" stroke="${o}" stroke-width="3.5"/>`) +
     face(100, 90, mode, o, opts.mouth) +
     (acc ? scarf(100, 126, o) + hat(100, 34, o) : "")
   );
@@ -169,5 +186,11 @@ export function cocoSvg(opts: CocoArtOptions = {}): string {
     case "play": inner = sitting(o, acc, "happy", {}); break;
     default: inner = sitting(o, acc, opts.blink ? "closed" : "open", {});
   }
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 210" role="img" aria-label="Coco the black cat, ${pose}">${inner}</svg>`;
+  const defs =
+    `<defs>` +
+    `<radialGradient id="coco-fur" cx="40%" cy="30%" r="75%"><stop offset="0" stop-color="${P.fur === PALETTE.fur ? "#2E2E3A" : P.fur}"/><stop offset="1" stop-color="${P.fur}"/></radialGradient>` +
+    `<radialGradient id="coco-iris" cx="45%" cy="40%" r="65%"><stop offset="0" stop-color="#C6FFC9"/><stop offset=".45" stop-color="${P.eye}"/><stop offset="1" stop-color="#1E8F44"/></radialGradient>` +
+    `<linearGradient id="coco-ear" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F7B8C7"/><stop offset="1" stop-color="#C77A92"/></linearGradient>` +
+    `</defs>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 210" role="img" aria-label="Coco the black cat, ${pose}">${defs}${inner}</svg>`;
 }

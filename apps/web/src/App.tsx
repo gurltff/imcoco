@@ -8,13 +8,14 @@ import { DoodleScatter } from "./components/Doodles";
 import { coco } from "./lib/audio";
 import type { Screen } from "./lib/nav";
 import { useSettings } from "./lib/store";
+import { Chat } from "./screens/Chat";
 import { Comfort } from "./screens/Comfort";
 import { Home } from "./screens/Home";
 import { Memories } from "./screens/Memories";
 import { Play } from "./screens/Play";
 import { World } from "./screens/World";
 
-const ORDER: Screen[] = ["home", "comfort", "world", "play", "memories"];
+const ORDER: Screen[] = ["home", "comfort", "chat", "world", "play", "memories"];
 
 function Splash({ onWake }: { onWake: () => void }) {
   return (
@@ -71,7 +72,7 @@ export default function App() {
 
           <div ref={scroller} className={`no-scrollbar relative flex-1 overflow-x-hidden ${game ? "overflow-hidden bg-white" : "overflow-y-auto"}`}>
             <AnimatePresence mode="popLayout" initial={false} custom={dir}>
-              <motion.div key={screen} custom={dir} className={game ? "h-full" : "min-h-full"}
+              <motion.div key={screen} custom={dir} className={game || screen === "chat" ? "h-full" : "min-h-full"}
                 variants={{
                   enter: (d: number) => ({ x: d * 60, opacity: 0, filter: "blur(2px)" }),
                   center: { x: 0, opacity: 1, filter: "blur(0px)" },
@@ -80,6 +81,7 @@ export default function App() {
                 initial="enter" animate="center" exit="exit" transition={{ type: "spring", stiffness: 300, damping: 32 }}>
                 {screen === "home" && <Home onNav={nav} />}
                 {screen === "comfort" && <Comfort />}
+                {screen === "chat" && <Chat openSettings={() => setSettingsOpen(true)} />}
                 {screen === "world" && <World onNav={nav} />}
                 {screen === "play" && <Play onNav={nav} />}
                 {screen === "memories" && <Memories />}

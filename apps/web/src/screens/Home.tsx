@@ -156,6 +156,17 @@ export function Home({ onNav }: { onNav: (s: Screen) => void }) {
         </div>
       </motion.div>
 
+      {/* Chat banner */}
+      <motion.button variants={item} whileTap={{ scale: 0.98 }} onClick={() => onNav("chat")}
+        className="relative mt-4 flex w-full items-center gap-3 rounded-[1.4rem] border-[2.5px] border-navy/80 bg-cream px-4 py-3 text-left shadow-sticker">
+        <Coco pose="play" size={60} bob={false} />
+        <div className="flex-1">
+          <p className="font-hand text-3xl leading-none text-cherry">Talk to Coco</p>
+          <p className="smallcaps">Chat · he always replies</p>
+        </div>
+        <span className="rounded-2xl rounded-bl-sm border-2 border-navy/70 bg-baby px-2 py-1 font-hand text-lg">mrrp?</span>
+      </motion.button>
+
       {/* Birthday banner */}
       <motion.button variants={item} whileTap={{ scale: 0.98 }} onClick={() => { writeLocal("memTab", "birthday"); onNav("memories"); }}
         className="relative mt-4 flex w-full items-center gap-3 overflow-hidden rounded-[1.4rem] border-[2.5px] border-navy/80 bg-baby px-4 py-3 text-left shadow-sticker">
