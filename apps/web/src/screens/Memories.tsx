@@ -2,13 +2,14 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { birthdayInfo, ordinal } from "@coco/core";
 import { Coco } from "../components/Coco";
+import { Tutu } from "../components/Tutu";
 import { Doodle, DoodleScatter } from "../components/Doodles";
 import { coco } from "../lib/audio";
 import { deleteMemory, listMemories, putMemory, type Memory } from "../lib/db";
 import { useLocal } from "../lib/store";
 import { Sticker } from "../game/ui";
 
-type Tab = "album" | "letters" | "birthday";
+type Tab = "album" | "letters" | "birthday" | "tutu";
 
 /** Two-tap confirm (browser confirm dialogs aren't available everywhere). */
 function ConfirmBtn({ label, onConfirm }: { label: string; onConfirm: () => void }) {
@@ -24,8 +25,8 @@ export function Memories() {
       <DoodleScatter items={[{ name: "sparkle", x: "86%", y: "14px", size: 16 }, { name: "cherry", x: "4%", y: "20px", size: 22 }]} />
       <p className="smallcaps text-center">Coco's always around you</p>
       <h1 className="text-center font-hand text-[40px] leading-none text-cherry">Memories</h1>
-      <div className="relative mx-auto mt-3 flex max-w-[340px] rounded-full border-[2.5px] border-navy/80 bg-baby p-1 shadow-sticker" role="tablist">
-        {([["album", "Photo wall"], ["letters", "Letters"], ["birthday", "Birthday"]] as const).map(([id, l]) => (
+      <div className="relative mx-auto mt-3 flex max-w-[380px] rounded-full border-[2.5px] border-navy/80 bg-baby p-1 shadow-sticker" role="tablist">
+        {([["album", "Photos"], ["letters", "Letters"], ["birthday", "Birthday"], ["tutu", "Tutu"]] as const).map(([id, l]) => (
           <button key={id} role="tab" aria-selected={tab === id} onClick={() => setTab(id)} className="relative min-h-[44px] flex-1 rounded-full font-hand text-lg">
             {tab === id && <motion.span layoutId="mem-pill" className="absolute inset-0 rounded-full bg-cream" transition={{ type: "spring", stiffness: 500, damping: 36 }} />}
             <span className={`relative ${tab === id ? "text-cherry" : ""}`}>{l}</span>
@@ -37,6 +38,7 @@ export function Memories() {
           {tab === "album" && <Album />}
           {tab === "letters" && <Letters />}
           {tab === "birthday" && <Birthday />}
+          {tab === "tutu" && <TutuPage onPhotos={() => setTab("album")} />}
         </motion.div>
       </AnimatePresence>
     </div>
@@ -299,6 +301,51 @@ function Birthday() {
         <motion.p initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mt-4 font-hand text-2xl leading-snug">
           Happy birthday, little chonk. 💚<br />Coco's always around you, and he'd like the first slice.
         </motion.p>
+      )}
+    </div>
+  );
+}
+
+// ---------------- Tutu ----------------
+function TutuPage({ onPhotos }: { onPhotos: () => void }) {
+  const [candle, setCandle] = useLocal<boolean>("tutuCandle", false);
+  return (
+    <div className="mt-4 text-center lg:mx-auto lg:max-w-2xl">
+      <div className="sticker relative overflow-hidden px-4 pb-5 pt-4">
+        <DoodleScatter items={[{ name: "sparkle", x: "8%", y: "16px", size: 14 }, { name: "heart", x: "86%", y: "22px", size: 16 }, { name: "sparkle", x: "80%", y: "150px", size: 12 }]} />
+        <p className="smallcaps">Coco's little friend</p>
+        <h2 className="font-hand text-5xl leading-none text-cherry">Tutu</h2>
+        <p className="mt-1 text-sm text-navy/70">2 months old · tiny tabby · white paws and a pink nose</p>
+        <div className="relative mx-auto mt-3 flex h-[170px] w-[300px] max-w-full items-end justify-center">
+          <motion.div initial={{ x: -10, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 0.8 }}><Coco pose="purr" size={150} /></motion.div>
+          <motion.div initial={{ x: 10, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 0.8, delay: 0.2 }} className="-ml-10 mb-1"><Tutu size={96} /></motion.div>
+          <motion.span className="absolute left-1/2 top-2 text-cherry" animate={{ y: [0, -6, 0], opacity: [0.6, 1, 0.6] }} transition={{ repeat: Infinity, duration: 2.4 }}>
+            <Doodle name="heart" size={22} />
+          </motion.span>
+        </div>
+        <p className="mx-auto mt-3 max-w-[34ch] font-hand text-xl leading-snug">
+          You found Tutu when he was hurt, and you held him and took him to get better. He was so loved.
+        </p>
+        <p className="mx-auto mt-2 max-w-[34ch] font-hand text-xl leading-snug">
+          Now he's curled up beside Coco, safe and warm. Coco says he's the only cat he'll ever share his snacks with. 🐾
+        </p>
+      </div>
+
+      <div className="mt-4 flex flex-wrap justify-center gap-2">
+        <button className={`pill ${candle ? "bg-sun" : "bg-white"}`} onClick={() => { setCandle(!candle); if (!candle) coco.meow("mew"); }}>
+          {candle ? "🕯️ A candle is lit for Tutu" : "Light a little candle for Tutu"}
+        </button>
+        <button className="pill bg-baby" onClick={onPhotos}>Add photos of Tutu</button>
+      </div>
+      {candle && (
+        <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="mx-auto mt-3 flex w-fit items-end gap-2">
+          <svg viewBox="0 0 30 60" className="h-16 w-8" aria-hidden>
+            <motion.path d="M15 18 q-7 -9 0 -17 q7 8 0 17z" fill="#FFE95C" stroke="#C8323A" strokeWidth="1.5"
+              animate={{ scaleY: [1, 1.12, 0.94, 1], rotate: [-3, 3, -2, 0] }} transition={{ repeat: Infinity, duration: 0.8 }} style={{ originX: "15px", originY: "18px" }} />
+            <rect x="9" y="20" width="12" height="36" rx="3" fill="#FBF3DC" stroke="#2B3A55" strokeWidth="2" />
+          </svg>
+          <p className="pb-2 font-hand text-lg">for Tutu, with love 💛</p>
+        </motion.div>
       )}
     </div>
   );

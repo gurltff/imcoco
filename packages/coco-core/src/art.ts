@@ -196,3 +196,58 @@ export function cocoSvg(opts: CocoArtOptions = {}): string {
     `</defs>`;
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 210" role="img" aria-label="Coco the black cat, ${pose}">${defs}${inner}</svg>`;
 }
+
+/**
+ * Tutu: Coco's little friend. A 2-month-old grey-brown tabby kitten with a white blaze,
+ * white muzzle, chest and paws, big ears and blue-grey kitten eyes.
+ */
+export function tutuSvg(opts: { pose?: "sit" | "sleep"; blink?: boolean; outline?: string } = {}): string {
+  const o = opts.outline ?? PALETTE.navy;
+  const F = "#8F857A", D = "#4E4741", Wh = "#FBFAF6";
+  const eyeOpen = (x: number, y: number) =>
+    `<ellipse cx="${x}" cy="${y}" rx="11" ry="12" fill="url(#tutu-iris)" stroke="${o}" stroke-width="2"/>` +
+    `<ellipse cx="${x}" cy="${y + 1}" rx="5" ry="8" fill="#14191C"/>` +
+    `<circle cx="${x + 4}" cy="${y - 5}" r="3.6" fill="#fff"/><circle cx="${x - 3.5}" cy="${y + 4.5}" r="1.6" fill="#fff" opacity=".85"/>`;
+  const eyeShut = (x: number, y: number) => `<path d="M${x - 9} ${y} Q${x} ${y + 7} ${x + 9} ${y}" stroke="${o}" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+  const defs = `<defs><radialGradient id="tutu-iris" cx="45%" cy="40%" r="65%"><stop offset="0" stop-color="#DCEBF2"/><stop offset=".5" stop-color="#9DB6C4"/><stop offset="1" stop-color="#5F7D8E"/></radialGradient></defs>`;
+  if (opts.pose === "sleep") {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 210" role="img" aria-label="Tutu the kitten, sleeping">${defs}` +
+      `<path d="M60 176 Q110 196 166 176" stroke="${o}" stroke-width="13" fill="none" stroke-linecap="round"/><path d="M60 176 Q110 196 166 176" stroke="${F}" stroke-width="8" fill="none" stroke-linecap="round"/>` +
+      `<ellipse cx="118" cy="160" rx="58" ry="30" fill="${F}" stroke="${o}" stroke-width="3"/>` +
+      `<path d="M100 134 q4 10 0 20 M118 132 q4 10 0 22 M136 134 q4 10 0 20" stroke="${D}" stroke-width="4" fill="none" stroke-linecap="round"/>` +
+      `<path d="M58 132 L56 92 L80 114 Z M106 132 L108 92 L86 114 Z" fill="${F}" stroke="${o}" stroke-width="3" stroke-linejoin="round"/>` +
+      `<ellipse cx="82" cy="140" rx="34" ry="28" fill="${F}" stroke="${o}" stroke-width="3"/>` +
+      `<path d="M82 114 L82 138" stroke="${Wh}" stroke-width="8" stroke-linecap="round"/><ellipse cx="82" cy="152" rx="16" ry="11" fill="${Wh}"/>` +
+      `<path d="M70 118 q4 4 0 8 M94 118 q-4 4 0 8" stroke="${D}" stroke-width="3" fill="none" stroke-linecap="round"/>` +
+      eyeShut(70, 140) + eyeShut(94, 140) +
+      `<path d="M78 148 h8 l-4 4z" fill="#F4A3B5"/>` +
+      `</svg>`;
+  }
+  const eyes = opts.blink ? eyeShut(88, 96) + eyeShut(132, 96) : eyeOpen(88, 96) + eyeOpen(132, 96);
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 210" role="img" aria-label="Tutu the kitten">${defs}` +
+    // tail
+    `<path d="M140 184 Q178 178 172 140" stroke="${o}" stroke-width="13" fill="none" stroke-linecap="round"/><path d="M140 184 Q178 178 172 140" stroke="${F}" stroke-width="8" fill="none" stroke-linecap="round"/>` +
+    `<path d="M164 170 l8 -2 M168 156 l8 0" stroke="${D}" stroke-width="3" stroke-linecap="round"/>` +
+    // small body with white chest
+    `<ellipse cx="110" cy="152" rx="42" ry="40" fill="${F}" stroke="${o}" stroke-width="3"/>` +
+    `<ellipse cx="110" cy="158" rx="24" ry="30" fill="${Wh}"/>` +
+    `<path d="M74 140 q8 4 6 12 M146 140 q-8 4 -6 12" stroke="${D}" stroke-width="3.5" fill="none" stroke-linecap="round"/>` +
+    // white paws
+    `<ellipse cx="94" cy="190" rx="11" ry="7" fill="${Wh}" stroke="${o}" stroke-width="2.5"/><ellipse cx="126" cy="190" rx="11" ry="7" fill="${Wh}" stroke="${o}" stroke-width="2.5"/>` +
+    // big kitten ears
+    `<path d="M64 84 L58 26 L98 58 Z M156 84 L162 26 L122 58 Z" fill="${F}" stroke="${o}" stroke-width="3" stroke-linejoin="round"/>` +
+    `<path d="M68 72 L65 40 L88 60 Z M152 72 L155 40 L132 60 Z" fill="#E7B8C2"/>` +
+    // round head
+    `<ellipse cx="110" cy="96" rx="52" ry="42" fill="${F}" stroke="${o}" stroke-width="3"/>` +
+    // tabby forehead stripes
+    `<path d="M98 58 q2 9 0 16 M110 55 q1 10 0 18 M122 58 q-2 9 0 16 M66 88 q8 2 12 8 M154 88 q-8 2 -12 8" stroke="${D}" stroke-width="4" fill="none" stroke-linecap="round"/>` +
+    // white blaze + muzzle
+    `<path d="M110 70 C104 86 100 100 96 112 L124 112 C120 100 116 86 110 70 Z" fill="${Wh}"/>` +
+    `<ellipse cx="110" cy="118" rx="22" ry="14" fill="${Wh}"/>` +
+    eyes +
+    `<ellipse cx="80" cy="114" rx="7" ry="4" fill="#F4A3B5" opacity=".55"/><ellipse cx="140" cy="114" rx="7" ry="4" fill="#F4A3B5" opacity=".55"/>` +
+    `<path d="M104 110 L116 110 L110 117 Z" fill="#F29BAE"/>` +
+    `<path d="M102 121 Q106 126 110 120 Q114 126 118 121" stroke="${o}" stroke-width="2" fill="none" stroke-linecap="round"/>` +
+    `<path d="M84 118 L60 114 M84 122 L62 126 M136 118 L160 114 M136 122 L158 126" stroke="#9BA3B3" stroke-width="1.5" stroke-linecap="round"/>` +
+    `</svg>`;
+}

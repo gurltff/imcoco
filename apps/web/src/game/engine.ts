@@ -8,6 +8,9 @@ import sleepUrl from "./sprites/coco-sleep.png";
 import sitUrl from "./sprites/coco-sit.png";
 import loafUrl from "./sprites/coco-loaf.png";
 import happyUrl from "./sprites/coco-happy.png";
+import tutuSit from "./sprites/tutu-sit.png";
+import tutuRun from "./sprites/tutu-run.png";
+import tutuLoaf from "./sprites/tutu-loaf.png";
 import greyIdle from "./sprites/stray-grey-idle.png";
 import greyRun from "./sprites/stray-grey-run.png";
 import gingerIdle from "./sprites/stray-ginger-idle.png";
@@ -16,6 +19,7 @@ import gingerRun from "./sprites/stray-ginger-run.png";
 // Coco's sprites: "Black Cat" by Carysaurus (free asset), eyes recoloured green.
 const SHEETS: Record<string, string> = {
   idle: idleUrl, run: runUrl, sleep: sleepUrl, sit: sitUrl, loaf: loafUrl, happy: happyUrl,
+  "tutu-sit": tutuSit, "tutu-run": tutuRun, "tutu-loaf": tutuLoaf,
   "grey-idle": greyIdle, "grey-run": greyRun, "ginger-idle": gingerIdle, "ginger-run": gingerRun,
 };
 /** Size of one world pixel in CSS px (the pixel-art grain). */
@@ -25,6 +29,7 @@ const CREAM = "#f7eed8";
 export interface WorldCallbacks {
   onTapCoco(sleeping: boolean): void;
   onTapMailbox(): void;
+  onTapTutu?(): void;
   onAttention(on: boolean): void;
   onStandoff(on: boolean): void;
   onFed(foodId: string): void;
@@ -53,6 +58,8 @@ export class WorldEngine {
   private imgs = new Map<string, HTMLImageElement>();
   private raf = 0; private last = 0; private acc = 0; private time = 0;
   private coco = { gx: 4.5, gy: 4.5, tx: 4.5, ty: 4.5, state: "idle" as CocoState, t: 2, dir: 1, step: 0, stepT: 0, blink: false, speed: 1.2 };
+  /** Tutu, Coco's little kitten friend, trots after him and naps beside him. */
+  private tutu = { gx: 4.0, gy: 5.2, dir: 1, moving: false };
   private attention = false; private attentionT = 25;
   private bowl: string | null = null;
   private strays: Stray[] = [];
@@ -186,6 +193,12 @@ export class WorldEngine {
       else if (sleeping) this.float("mrrp… zzz", { x: c.x, y: c.y - s }, INK, 15);
       return;
     }
+    const tp = this.toScreen(this.tutu.gx, this.tutu.gy); const ts = this.cocoSize() * 0.6;
+    if (Math.abs(x - tp.x) < ts * 0.6 && y > tp.y - ts * 1.1 && y < tp.y + 6) {
+      this.cb.onTapTutu?.();
+      for (let i = 0; i < 2; i++) this.float("♥", { x: tp.x + (i ? 10 : -10), y: tp.y - ts - i * 6 }, "#E85A6A", 16);
+      return;
+    }
     const mb = this.toScreen(4.6, 7.9);
     if (Math.abs(x - mb.x) < 22 && y > mb.y - 55 && y < mb.y + 6) { this.cb.onTapMailbox(); return; }
     const g = this.toGrid(x, y);
@@ -297,6 +310,19 @@ export class WorldEngine {
     }
     if (c.t <= 0) this.decide();
 
+    {
+      const t = this.tutu; const cc = this.coco;
+      // sit right beside Coco on screen (same depth, one step to the side he isn't facing)
+      const side = (cc.dir || 1) > 0 ? -1 : 1;
+      const tx = cc.gx + 0.55 * side, ty = cc.gy - 0.55 * side;
+      const dx = tx - t.gx, dy = ty - t.gy, d = Math.hypot(dx, dy);
+      t.moving = d > 0.3;
+      if (t.moving) {
+        const sp = Math.min(d, (d > 1.5 ? 2.6 : 1.5) * dt);
+        t.gx += (dx / d) * sp; t.gy += (dy / d) * sp;
+        if (Math.abs(dx - dy) > 0.02) t.dir = Math.sign(dx - dy);
+      }
+    }
     for (const f of this.floaters) { f.t += dt; f.y -= 22 * dt; }
     this.floaters = this.floaters.filter((f) => f.t < 1.6);
   }
@@ -364,6 +390,7 @@ export class WorldEngine {
       list.push({ depth: item.gx + item.gy - (id === "rug" ? 3 : 0), draw: () => item.draw(this, item.gx, item.gy) });
     }
     list.push({ depth: this.coco.gx + this.coco.gy + 0.01, draw: () => this.drawCoco() });
+    list.push({ depth: this.tutu.gx + this.tutu.gy, draw: () => this.drawTutu() });
     for (const s of this.strays) list.push({ depth: s.gx + s.gy, draw: () => this.drawStray(s) });
     list.sort((a, b) => a.depth - b.depth).forEach((d) => d.draw());
     this.drawButterfly();
@@ -635,6 +662,16 @@ export class WorldEngine {
       const hop = this.jump > 0 ? Math.sin((this.jump / 0.18) * Math.PI) * 8 : 0;
       this.sprite(this.sheet(c.state === "eat" ? "sit" : "idle"), c.state === "eat" ? 0 : f, p.x, p.y + bob - hop, flip, chonk * (1 + wob), 1 - wob);
     }
+  }
+
+  private drawTutu() {
+    const t = this.tutu, c = this.coco, ctx = this.ctx; const p = this.toScreen(t.gx, t.gy);
+    const S = 0.62; // he's a tiny 2-month-old
+    ctx.fillStyle = "rgba(40,60,30,.2)"; ctx.beginPath(); ctx.ellipse(p.x, p.y, this.cocoSize() * 0.22, this.cocoSize() * 0.06, 0, 0, Math.PI * 2); ctx.fill();
+    const sleepy = c.state === "sleep" || c.state === "nap" || c.state === "cuddle";
+    if (t.moving) this.sprite(this.sheet("tutu-run"), Math.floor(this.time * 13) % 6, p.x, p.y, t.dir < 0, S, S);
+    else if (sleepy) { const br = 1 + Math.sin(this.time * 2.4) * 0.03; this.sprite(this.sheet("tutu-loaf"), 2, p.x, p.y, t.dir < 0, S * br, S / br); }
+    else this.sprite(this.sheet("tutu-sit"), Math.floor(this.time * 5 + 3) % 8, p.x, p.y, false, S, S);
   }
 
   private drawStray(st: Stray) {

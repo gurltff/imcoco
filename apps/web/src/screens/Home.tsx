@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { type CocoMood, type CocoPose, CHECKIN_QUESTIONS, DAILY_MESSAGES, MOOD_INFO, birthdayInfo, currentMood, dailyPick, ordinal } from "@coco/core";
 import { Coco } from "../components/Coco";
+import { Tutu } from "../components/Tutu";
 import { PixelCoco } from "../game/ui";
 import { Doodle, DoodleScatter } from "../components/Doodles";
 import { Hearts, type Burst } from "../components/Hearts";
@@ -25,10 +26,15 @@ function Card({ title, sub, onClick, children, tilt = 0 }: { title: string; sub:
   );
 }
 
-function TableScene({ onPet, pose, waving }: { onPet: (x: number, y: number) => void; pose: CocoPose; waving: boolean }) {
+function TableScene({ onPet, pose, waving }: { onPet: (x: number, y: number, tutu?: boolean) => void; pose: CocoPose; waving: boolean }) {
   const ref = useRef<HTMLButtonElement>(null);
   return (
     <div className="relative mx-auto h-[210px] w-[280px] lg:origin-top lg:scale-125 lg:mb-14">
+      {/* Tutu, Coco's little friend, sits right beside him */}
+      <button aria-label="Pet Tutu" className="absolute -left-3 top-[58px] z-[1]"
+        onClick={(e) => { const r = ref.current!.parentElement!.getBoundingClientRect(); onPet(e.clientX - r.left, e.clientY - r.top, true); }}>
+        <Tutu size={88} pose={pose === "sleep" ? "sleep" : "sit"} />
+      </button>
       <button ref={ref} aria-label="Pet Coco" className="absolute left-1/2 top-0 -translate-x-1/2"
         onClick={(e) => { const r = ref.current!.parentElement!.getBoundingClientRect(); onPet(e.clientX - r.left, e.clientY - r.top); }}>
         {/* says hello when the app opens (happy wiggle), then shows his mood */}
@@ -149,8 +155,8 @@ export function Home({ onNav }: { onNav: (s: Screen) => void }) {
   const ribbon = bday.isToday ? `It's my ${ordinal(bday.turning)} birthday!! Cake please. 🎂` : dailyPick(DAILY_MESSAGES);
   const answered = checkin?.day === today ? checkin.answer : null;
 
-  const pet = (x: number, y: number) => {
-    coco.meow("tap");
+  const pet = (x: number, y: number, tutu = false) => {
+    coco.meow(tutu ? "mew" : "tap");
     const id = Date.now();
     setBursts((b) => [...b, { id, x, y }]);
     setTimeout(() => setBursts((b) => b.filter((z) => z.id !== id)), 1400);
@@ -182,7 +188,7 @@ export function Home({ onNav }: { onNav: (s: Screen) => void }) {
         <TimeGlow period={period} />
         <p className="relative font-hand text-base tracking-wide text-navy/80">{GREETING[period]}</p>
         <Hearts bursts={bursts} />
-        <TableScene onPet={(x, y) => { setWaving(false); pet(x, y); }} pose={waving ? "play" : MOOD_POSE[moodKey]} waving={waving} />
+        <TableScene onPet={(x, y, t) => { setWaving(false); pet(x, y, t); }} pose={waving ? "play" : MOOD_POSE[moodKey]} waving={waving} />
         <h1 className="mt-1 font-hand text-[44px] leading-[0.85] text-babydeep" style={{ WebkitTextStroke: "1px rgb(var(--c-navy))" }}>
           coco's <span className="text-cherry">corner</span>
         </h1>

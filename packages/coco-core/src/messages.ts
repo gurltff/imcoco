@@ -11,6 +11,9 @@ export const DAILY_MESSAGES = [
   "Take a slow breath with me. In… and out.",
   "Proud of you for today, even the small bits.",
   "Coco's always around you. Look, a sunbeam.",
+  "Tutu fell asleep on my tail again. I'm letting him.",
+  "I'm teaching Tutu how to beg for snacks. He's a natural.",
+  "Tutu and I are sitting right next to you. Both of us.",
 ];
 
 export const COMFORT_LINES = [

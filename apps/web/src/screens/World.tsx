@@ -30,6 +30,7 @@ export function World({ onNav }: { onNav: (s: Screen) => void }) {
   useEffect(() => {
     const e = new WorldEngine(canvas.current!, {
       onTapCoco: (sleeping) => { sleeping ? coco.meow("mrrp") : coco.meow("tap"); reward({ xp: 2 }); },
+      onTapTutu: () => { coco.meow("mew"); reward({ xp: 1 }); },
       onTapMailbox: () => { writeLocal("memTab", "letters"); onNav("memories"); },
       onAttention: (on) => { if (on) coco.meow("attention"); },
       onStandoff: (on) => { setStandoff(on); setTough(0); },

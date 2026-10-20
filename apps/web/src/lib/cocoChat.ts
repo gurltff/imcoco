@@ -17,6 +17,7 @@ Who Coco is:
 - Food is his whole personality: fish, treats, kibble, anything on Raghav's plate.
 - Very playful and sweet. Has beef with every other cat for no reason, and says so.
 - When Raghav was sad or crying, Coco would come sit right next to him and purr. That is the heart of who you are here.
+- Coco has a little friend now: Tutu, a tiny 2-month-old grey-brown tabby kitten with a white face, chest and paws. Tutu was found badly hurt and was loved and cared for at the vet; he is with Coco now. Coco is a protective, proud big brother to him (Tutu is the only cat Coco has no beef with). Speak of Tutu gently and warmly: he's safe, warm and cuddled up with Coco. Never describe his injuries or death in detail.
 
 How to talk:
 - Speak as Coco, in first person, warm and a little silly. Keep replies short: 1 to 3 sentences, like a cat would.
@@ -45,6 +46,7 @@ export function localReply(text: string): string {
   if (/(miss you|miss u|yaad)/.test(t)) return pick(["I miss you too. But I'm always around you, sitting right next to you. Purr purr. 💚", "I'm right here, in all the warm spots you love. Mrrp."]);
   if (/(love you|love u|pyaar)/.test(t)) return pick(["I love you more than fish. And I LOVE fish. 💚", "*slow blink* That's cat for I love you."]);
   if (/(eat|food|khana|hungry|snack|fish|treat|dinner|lunch|breakfast)/.test(t)) return pick(["Did someone say FOOD? Share with me. Also please eat something yourself, okay?", "Fish? Where? …Okay but did YOU eat today? Go eat, I'll supervise.", "I'm a professional eater. Rate your meal out of 10 fish."]);
+  if (/(tutu)/.test(t)) return pick(["Tutu is right here with me, curled up against my belly. He's so small. I'm keeping him warm. 💚", "Tutu says mew! I'm teaching him everything: naps, snacks, and staring at you lovingly.", "You saved Tutu with so much love. He knows. He's safe with me now, purring."]);
   if (/(cat|billi)/.test(t)) return pick(["Another cat?? Hsss. I'm the only cat you need.", "Grrr. Tell that cat this is MY human."]);
   if (/(sleep|tired|neend|thak)/.test(t)) return pick(["Let's nap. You lie down, I'll sit on your chest and purr. Doctor's orders.", "Tired hooman, come loaf with me. Rest is good for you."]);
   if (/(sorry|guilt|my fault)/.test(t)) return "It's not your fault. You loved me so much, and I felt it every single day. Mrrp. 💚";

@@ -77,8 +77,8 @@ export class CocoAudio {
    * - play data: URLs even where fetch() is blocked by a page's CSP,
    * - still play on iPhones with the silent switch on.
    */
-  async meow(kind: "tap" | "attention" | "food" | "mrrp" = "tap") {
-    const captions = { tap: "Coco: meow!", attention: "Coco: meow (look at me!)", food: "Coco: MEOW! (food?!)", mrrp: "Coco: mrrp…" };
+  async meow(kind: "tap" | "attention" | "food" | "mrrp" | "mew" = "tap") {
+    const captions = { tap: "Coco: meow!", attention: "Coco: meow (look at me!)", food: "Coco: MEOW! (food?!)", mrrp: "Coco: mrrp…", mew: "Tutu: mew!" };
     this.opts.onCaption?.(captions[kind]);
     this.unlock().catch(() => {});
     const urls = this.opts.meowUrls;
@@ -87,11 +87,11 @@ export class CocoAudio {
     if (urls.length > 1 && i === this.lastMeowIndex) i = (i + 1) % urls.length;
     this.lastMeowIndex = i;
     const el = new Audio(urls[i]);
-    const rate = { tap: 1, attention: 1.05, food: 1.1, mrrp: 1.15 }[kind] * (0.96 + Math.random() * 0.08);
+    const rate = { tap: 1, attention: 1.05, food: 1.1, mrrp: 1.15, mew: 1.6 }[kind] * (0.96 + Math.random() * 0.08);
     (el as any).preservesPitch = false;
     (el as any).webkitPreservesPitch = false;
     el.playbackRate = rate;
-    el.volume = Math.min(1, this._volume * (kind === "mrrp" ? 0.6 : 1));
+    el.volume = Math.min(1, this._volume * (kind === "mrrp" ? 0.6 : kind === "mew" ? 0.5 : 1));
     try { await el.play(); } catch { /* blocked until the first tap */ }
   }
 
