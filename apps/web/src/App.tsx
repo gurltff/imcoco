@@ -2,6 +2,7 @@ import { AnimatePresence, MotionConfig, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { Captions } from "./components/Captions";
 import { Coco } from "./components/Coco";
+import { Tutu } from "./components/Tutu";
 import { SettingsSheet } from "./components/SettingsSheet";
 import { TabBar } from "./components/TabBar";
 import { DoodleScatter } from "./components/Doodles";
@@ -26,11 +27,14 @@ function Splash({ onWake }: { onWake: () => void }) {
         { name: "croissant", x: "12%", y: "18%", size: 34, r: -10 }, { name: "cherry", x: "78%", y: "14%", size: 28 },
         { name: "sparkle", x: "22%", y: "70%", size: 18 }, { name: "cake", x: "74%", y: "72%", size: 30 }, { name: "fish", x: "60%", y: "30%", size: 32 },
       ]} />
-      <p className="smallcaps">a cosy little corner</p>
-      <h1 className="font-hand text-6xl leading-none text-cherry">Coco's<br /><span className="text-babydeep" style={{ WebkitTextStroke: "1px #2B3A55" }}>Corner</span></h1>
-      <Coco pose="sleep" size={190} className="mt-6" />
+      <p className="smallcaps">a cosy little world</p>
+      <h1 className="font-hand text-6xl leading-none text-cherry">Coco &amp; Tutu’s<br /><span className="text-babydeep" style={{ WebkitTextStroke: "1px #2B3A55" }}>World</span></h1>
+      <div className="mt-6 flex items-end">
+        <Coco pose="sleep" size={190} />
+        <Tutu pose="sleep" size={110} className="-ml-12" />
+      </div>
       <motion.p className="mt-6 font-hand text-2xl" animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 2.4 }}>
-        tap to wake Coco
+        tap to wake Coco &amp; Tutu
       </motion.p>
       <p className="smallcaps mt-1">sound on 🔊</p>
     </motion.button>
@@ -74,7 +78,7 @@ export default function App() {
         {/* Phone: full screen. Tablet: phone-shaped frame. Laptop (lg+): full window with a sidebar. */}
         <div className="paper relative flex h-[100dvh] w-full flex-col overflow-hidden sm:h-[844px] sm:max-h-[calc(100dvh-3rem)] sm:w-[400px] sm:rounded-phone sm:border-[3px] sm:border-navy/80 sm:shadow-2xl lg:h-[100dvh] lg:max-h-none lg:w-full lg:flex-row lg:rounded-none lg:border-0 lg:shadow-none">
           {!game && <header className="relative z-20 flex items-center lg:hidden justify-between px-5 pb-1 pt-[max(env(safe-area-inset-top),12px)]">
-            <span className="font-hand text-lg text-navy/80">coco's corner</span>
+            <span className="font-hand text-lg text-navy/80">coco &amp; tutu’s world</span>
             <span className="font-hand text-sm text-navy/50">est. with love</span>
           </header>}
 

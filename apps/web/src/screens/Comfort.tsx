@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { COMFORT_LINES, TypingRhythm, analyzeText } from "@coco/core";
 import { Coco } from "../components/Coco";
+import { Tutu } from "../components/Tutu";
 import { BreathCircle } from "../components/BreathCircle";
 import { DoodleScatter } from "../components/Doodles";
 import { coco } from "../lib/audio";
@@ -162,7 +163,9 @@ export function Comfort() {
               transition={{ duration: 2.4, ease: [0.3, 0.1, 0.3, 1] }} onAnimationComplete={arrived}
               onPointerDown={hugStart} onPointerUp={hugEnd} onPointerLeave={hugEnd} onPointerCancel={hugEnd}
               onContextMenu={(e) => e.preventDefault()}>
-              <motion.div animate={hugging ? { scale: 1.08 } : { scale: 1 }}>
+              <motion.div animate={hugging ? { scale: 1.08 } : { scale: 1 }} className="flex items-end">
+                {/* little Tutu always tags along and sits with you too */}
+                {phase !== "walking" && <Tutu size={58} className="-mr-4 mb-0.5" />}
                 <Coco pose={phase === "walking" ? "walk" : phase === "happy" ? "play" : "purr"} size={104} />
               </motion.div>
               {hugging && <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute -top-4 left-1/2 -translate-x-1/2 whitespace-nowrap font-hand text-lg text-cherry">prrrrr ♥</motion.span>}

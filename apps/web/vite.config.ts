@@ -17,9 +17,9 @@ export default defineConfig(({ mode }) => ({
       includeAssets: ["icon.svg", "icon-192.png"],
       workbox: { globPatterns: ["**/*.{js,css,html,svg,png,mp3,woff2}"], globIgnores: ["coco-extension.zip"] },
       manifest: {
-        name: "Coco's Corner",
-        short_name: "Coco",
-        description: "A cosy little corner where Coco is always around.",
+        name: "Coco & Tutu’s World",
+        short_name: "Coco & Tutu",
+        description: "A cosy little world where Coco and Tutu are always around.",
         theme_color: "#A9C8E3",
         background_color: "#FBF3DC",
         display: "standalone",

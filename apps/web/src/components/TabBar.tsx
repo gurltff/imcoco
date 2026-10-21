@@ -24,7 +24,7 @@ export function TabBar({ current, onNav, onSettings }: { current: Screen; onNav:
   return (
     <nav className="relative z-30 mx-3 mb-3 flex items-stretch justify-around rounded-[1.6rem] border-[2.5px] border-navy/80 bg-baby px-1 py-1 shadow-sticker lg:m-4 lg:h-[calc(100dvh-2rem)] lg:w-60 lg:flex-col lg:justify-start lg:gap-1 lg:px-3 lg:py-5">
       <div className="hidden px-2 pb-4 lg:block">
-        <p className="font-hand text-3xl leading-none text-cherry">coco's corner</p>
+        <p className="font-hand text-[26px] leading-none text-cherry">coco &amp; tutu’s world</p>
         <p className="smallcaps mt-1">always around you</p>
       </div>
       {TABS.map((t) => {

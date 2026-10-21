@@ -203,7 +203,7 @@ export function cocoSvg(opts: CocoArtOptions = {}): string {
  */
 export function tutuSvg(opts: { pose?: "sit" | "sleep"; blink?: boolean; outline?: string } = {}): string {
   const o = opts.outline ?? PALETTE.navy;
-  const F = "#8F857A", D = "#4E4741", Wh = "#FBFAF6";
+  const F = "#9A7E63", D = "#523C2C", Wh = "#FCFAF5"; // earthy brown tabby + lots of white
   const eyeOpen = (x: number, y: number) =>
     `<ellipse cx="${x}" cy="${y}" rx="11" ry="12" fill="url(#tutu-iris)" stroke="${o}" stroke-width="2"/>` +
     `<ellipse cx="${x}" cy="${y + 1}" rx="5" ry="8" fill="#14191C"/>` +
@@ -217,7 +217,7 @@ export function tutuSvg(opts: { pose?: "sit" | "sleep"; blink?: boolean; outline
       `<path d="M100 134 q4 10 0 20 M118 132 q4 10 0 22 M136 134 q4 10 0 20" stroke="${D}" stroke-width="4" fill="none" stroke-linecap="round"/>` +
       `<path d="M58 132 L56 92 L80 114 Z M106 132 L108 92 L86 114 Z" fill="${F}" stroke="${o}" stroke-width="3" stroke-linejoin="round"/>` +
       `<ellipse cx="82" cy="140" rx="34" ry="28" fill="${F}" stroke="${o}" stroke-width="3"/>` +
-      `<path d="M82 114 L82 138" stroke="${Wh}" stroke-width="8" stroke-linecap="round"/><ellipse cx="82" cy="152" rx="16" ry="11" fill="${Wh}"/>` +
+      `<path d="M82 112 L82 140" stroke="${Wh}" stroke-width="9" stroke-linecap="round"/><ellipse cx="82" cy="154" rx="22" ry="12" fill="${Wh}"/><ellipse cx="140" cy="176" rx="22" ry="7" fill="${Wh}"/>` +
       `<path d="M70 118 q4 4 0 8 M94 118 q-4 4 0 8" stroke="${D}" stroke-width="3" fill="none" stroke-linecap="round"/>` +
       eyeShut(70, 140) + eyeShut(94, 140) +
       `<path d="M78 148 h8 l-4 4z" fill="#F4A3B5"/>` +
@@ -230,7 +230,9 @@ export function tutuSvg(opts: { pose?: "sit" | "sleep"; blink?: boolean; outline
     `<path d="M164 170 l8 -2 M168 156 l8 0" stroke="${D}" stroke-width="3" stroke-linecap="round"/>` +
     // small body with white chest
     `<ellipse cx="110" cy="152" rx="42" ry="40" fill="${F}" stroke="${o}" stroke-width="3"/>` +
-    `<ellipse cx="110" cy="158" rx="24" ry="30" fill="${Wh}"/>` +
+    `<ellipse cx="110" cy="160" rx="30" ry="32" fill="${Wh}"/>` +
+    `<rect x="85" y="160" width="18" height="30" rx="9" fill="${Wh}"/><rect x="117" y="160" width="18" height="30" rx="9" fill="${Wh}"/>` +
+    `<path d="M103 168 v20 M117 168 v20" stroke="#E2DAD0" stroke-width="2" stroke-linecap="round"/>` +
     `<path d="M74 140 q8 4 6 12 M146 140 q-8 4 -6 12" stroke="${D}" stroke-width="3.5" fill="none" stroke-linecap="round"/>` +
     // white paws
     `<ellipse cx="94" cy="190" rx="11" ry="7" fill="${Wh}" stroke="${o}" stroke-width="2.5"/><ellipse cx="126" cy="190" rx="11" ry="7" fill="${Wh}" stroke="${o}" stroke-width="2.5"/>` +
@@ -242,8 +244,8 @@ export function tutuSvg(opts: { pose?: "sit" | "sleep"; blink?: boolean; outline
     // tabby forehead stripes
     `<path d="M98 58 q2 9 0 16 M110 55 q1 10 0 18 M122 58 q-2 9 0 16 M66 88 q8 2 12 8 M154 88 q-8 2 -12 8" stroke="${D}" stroke-width="4" fill="none" stroke-linecap="round"/>` +
     // white blaze + muzzle
-    `<path d="M110 70 C104 86 100 100 96 112 L124 112 C120 100 116 86 110 70 Z" fill="${Wh}"/>` +
-    `<ellipse cx="110" cy="118" rx="22" ry="14" fill="${Wh}"/>` +
+    `<path d="M110 66 C103 84 98 98 92 112 L128 112 C122 98 117 84 110 66 Z" fill="${Wh}"/>` +
+    `<path d="M70 112 Q76 134 110 136 Q144 134 150 112 Q134 104 110 106 Q86 104 70 112 Z" fill="${Wh}"/>` +
     eyes +
     `<ellipse cx="80" cy="114" rx="7" ry="4" fill="#F4A3B5" opacity=".55"/><ellipse cx="140" cy="114" rx="7" ry="4" fill="#F4A3B5" opacity=".55"/>` +
     `<path d="M104 110 L116 110 L110 117 Z" fill="#F29BAE"/>` +

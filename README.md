@@ -1,4 +1,4 @@
-# Coco's Corner 🐾
+# Coco & Tutu’s World 🐾
 
 A private, cosy comfort app in memory of Coco: a chubby, jet-black, green-eyed 8-month-old who loved food, hated every other cat, and always sat next to you and purred when you were sad.
 
@@ -25,7 +25,7 @@ npm run build            # builds the extension (and its zip), then the web app 
 ### Chrome extension
 `npm run build:extension`, then open `chrome://extensions`, turn on Developer mode, click **Load unpacked** and choose `apps/extension/dist`.
 The same build is zipped to `apps/web/public/coco-extension.zip` so it can be downloaded from the app's Settings.
-Set `COCO_APP_URL=<your deployed link>` while building to make "Open Coco's Corner" go there.
+Set `COCO_APP_URL=<your deployed link>` while building to make "Open Coco & Tutu’s World" go there.
 
 ### Desktop overlay (Phase 6)
 The desktop app is kept out of the npm workspaces so a normal install never downloads Electron.

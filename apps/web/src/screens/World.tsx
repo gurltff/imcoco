@@ -213,7 +213,7 @@ export function World({ onNav }: { onNav: (s: Screen) => void }) {
           <input type="range" min={0} max={1} step={0.05} value={settings.volume} className="mt-1 w-full accent-black" onChange={(e) => { coco.setVolume(+e.target.value); setSettings({ ...settings, volume: +e.target.value }); }} />
         </label>
         <p className="py-2 text-base text-black/60">Day and night follow your real clock. At night Coco sleeps and purrs softly.</p>
-        <YellowBtn className="w-full" onClick={() => onNav("home")}>Back to Coco's Corner</YellowBtn>
+        <YellowBtn className="w-full" onClick={() => onNav("home")}>Back home</YellowBtn>
       </GameModal>
     </div>
   );
@@ -235,8 +235,9 @@ function InfoModal({ open, onClose, g, onLearn }: { open: boolean; onClose: () =
         </div>
       </div>
       <div className="mt-2 grid grid-cols-2 gap-x-3 rounded border-2 border-black/20 bg-white/60 p-2 text-base">
-        <span>Lives at: <b>Coco's Home</b></span><span>Age: <b>8 months</b></span>
+        <span>Lives at: <b>Coco &amp; Tutu’s World</b></span><span>Age: <b>8 months</b></span>
         <span>Coat: <b>jet black</b></span><span>Eyes: <b>bright green</b></span>
+        <span className="col-span-2">Best friend: <b>Tutu</b> (2-month-old tabby kitten, follows him everywhere)</span>
         <span className="col-span-2">Birthday: <b>16 Nov</b> {b.isToday ? "(today! 🎂)" : `(turning ${b.turning} in ${b.daysLeft} days)`}</span>
       </div>
 
@@ -250,7 +251,7 @@ function InfoModal({ open, onClose, g, onLearn }: { open: boolean; onClose: () =
         {tab === "info" && (
           <div className="space-y-2 text-lg">
             <p>Personality</p>
-            <div className="flex flex-wrap gap-1">{["playful", "sweet", "foodie", "cat-hater"].map((t) => <span key={t} className="rounded-full border-2 border-black px-2 text-base">{t}</span>)}</div>
+            <div className="flex flex-wrap gap-1">{["playful", "sweet", "foodie", "cat-hater (except Tutu)"].map((t) => <span key={t} className="rounded-full border-2 border-black px-2 text-base">{t}</span>)}</div>
             <p>Chonk level: <b>{chonkTitle(g.chonk)}</b></p>
             <div className="h-4 overflow-hidden rounded border-2 border-black"><div className="h-full bg-sun" style={{ width: `${g.chonk}%` }} /></div>
             <p className="text-base text-black/60">Stare-offs won: {g.wins}</p>

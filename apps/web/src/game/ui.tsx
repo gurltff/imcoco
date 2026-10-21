@@ -64,7 +64,7 @@ export function Hud({ g, onBack, children, strip = true }: { g: GameState; onBac
     <div className="pointer-events-none absolute inset-x-0 top-0 z-10 font-game">
       <div className={`${strip ? "hud-strip" : ""} pointer-events-none px-3 pb-2 pt-[max(env(safe-area-inset-top),10px)] [&>*]:pointer-events-auto`}>
       <div className="flex items-center gap-2">
-        <button aria-label="Back to Coco's Corner" onClick={onBack} className="game-btn h-10 w-10 text-xl leading-none">‹</button>
+        <button aria-label="Back home" onClick={onBack} className="game-btn h-10 w-10 text-xl leading-none">‹</button>
         <div className="flex flex-1 items-center lg:max-w-md">
           <span className="relative z-10 grid h-9 w-9 place-items-center rounded-full border-[2.5px] border-black bg-sun text-xl font-bold" style={{ boxShadow: "1px 2px 0 #000" }}><span className="absolute -top-2 -left-1"><StarIcon /></span>{g.level}</span>
           <div className="relative -ml-2 h-6 flex-1 overflow-hidden rounded-r-md border-[2.5px] border-black bg-white" aria-label={`XP ${g.xp} of ${need}`}>

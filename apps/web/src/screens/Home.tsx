@@ -126,7 +126,7 @@ function CocosDay({ checkedIn }: { checkedIn: string | null }) {
   return (
     <motion.div variants={item} className="sticker relative mt-4 hidden p-4 lg:block">
       <p className="smallcaps">Coco's day</p>
-      <p className="font-hand text-2xl leading-tight text-cherry">Today with Coco</p>
+      <p className="font-hand text-2xl leading-tight text-cherry">Today with Coco &amp; Tutu</p>
       <ul className="mt-2 space-y-2">
         {rows.map(([icon, text]) => (
           <li key={icon} className="flex items-start gap-3 rounded-xl bg-baby/30 px-3 py-2 text-sm"><span className="text-lg leading-none">{icon}</span><span>{text}</span></li>
@@ -189,10 +189,10 @@ export function Home({ onNav }: { onNav: (s: Screen) => void }) {
         <p className="relative font-hand text-base tracking-wide text-navy/80">{GREETING[period]}</p>
         <Hearts bursts={bursts} />
         <TableScene onPet={(x, y, t) => { setWaving(false); pet(x, y, t); }} pose={waving ? "play" : MOOD_POSE[moodKey]} waving={waving} />
-        <h1 className="mt-1 font-hand text-[44px] leading-[0.85] text-babydeep" style={{ WebkitTextStroke: "1px rgb(var(--c-navy))" }}>
-          coco's <span className="text-cherry">corner</span>
+        <h1 className="mt-1 font-hand text-[40px] leading-[0.9] text-babydeep" style={{ WebkitTextStroke: "1px rgb(var(--c-navy))" }}>
+          coco &amp; tutu’s <span className="text-cherry">world</span>
         </h1>
-        <p className="smallcaps mt-1">Coco's always around you</p>
+        <p className="smallcaps mt-1">Coco &amp; Tutu are always around you</p>
       </motion.div>
 
       {/* Mood widget */}
